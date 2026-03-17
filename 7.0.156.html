@@ -1,0 +1,4079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>🫀 Cardiac Auscultation Trainer v7.0.110 – Phone Edition</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+--primary: #1565c0;
+--primary-dark: #0d47a1;
+--success: #2e7d32;
+--warning: #f57c00;
+--danger: #c62828;
+--bg-dark: #0a1929;
+}
+html, body {
+height: 100%;
+width: 100%;
+margin: 0;
+padding: 0;
+overflow: hidden;
+}
+body {
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+background: linear-gradient(135deg, #0d47a1 0%, #1565c0 100%);
+}
+.container {
+position: fixed;
+top: 0; left: 0; right: 0; bottom: 0;
+max-width: 480px;
+margin: 0 auto;
+background: #fff;
+display: flex;
+flex-direction: column;
+overflow: hidden;
+border-radius: 0;
+}
+@media (min-width: 500px) {
+.container {
+top: 8px; bottom: 8px;
+border-radius: 16px;
+box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+}
+}
+.header {
+background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+color: #fff;
+padding: 6px 12px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+flex-shrink: 0;
+}
+.header h1 { font-size: 13px; font-weight: 800; }
+.header-sub { display: none; }
+.badge {
+display: inline-block;
+background: rgba(76,175,80,.25);
+border: 1px solid rgba(76,175,80,.55);
+padding: 2px 6px;
+border-radius: 8px;
+font-size: 7px;
+font-weight: 900;
+letter-spacing: .3px;
+white-space: nowrap;
+}
+.mode-tabs {
+display: flex;
+background: #f5f5f5;
+border-bottom: 1px solid #e0e0e0;
+flex-shrink: 0;
+}
+.mode-tab {
+flex: 1;
+padding: 8px 10px;
+text-align: center;
+font-size: 10px;
+font-weight: 900;
+cursor: pointer;
+border: none;
+background: transparent;
+color: #666;
+border-bottom: 3px solid transparent;
+transition: all .2s;
+user-select: none;
+}
+.mode-tab.active {
+color: var(--primary);
+background: #fff;
+border-bottom-color: var(--primary);
+}
+.tab-icon { font-size: 14px; display: block; margin-bottom: 2px; }
+.point-selector {
+padding: 5px 12px;
+background: #fafafa;
+border-bottom: 1px solid #eee;
+flex-shrink: 0;
+}
+.point-selector label { font-size: 9px; color: #666; font-weight: 900; }
+.point-selector select {
+width: 100%;
+padding: 6px 8px;
+margin-top: 4px;
+border: 1px solid #ddd;
+border-radius: 6px;
+font-size: 11px;
+background: #fff;
+}
+.status-bar {
+padding: 3px 10px;
+background: var(--primary-dark);
+color: #fff;
+font-size: 9px;
+display: none; /* v7.0.146: hidden — diag info in status text only */
+justify-content: space-between;
+align-items: center;
+gap: 8px;
+}
+.status-bar.diag-visible { display: flex; }
+.status-left { display: flex; align-items: center; gap: 6px; }
+.mini-pill {
+display: inline-flex;
+align-items: center;
+gap: 4px;
+padding: 2px 6px;
+border-radius: 10px;
+font-size: 7px;
+font-weight: 900;
+background: rgba(255,255,255,.12);
+border: 1px solid rgba(255,255,255,.18);
+}
+.mini-dot {
+width: 6px; height: 6px; border-radius: 50%;
+background: #bbb;
+box-shadow: 0 0 10px rgba(255,255,255,.2);
+}
+.warning-badge {
+padding: 2px 6px;
+border-radius: 4px;
+font-size: 7px;
+font-weight: 900;
+display: none;
+letter-spacing: .3px;
+}
+.warning-badge.active { display: inline-block; }
+.warning-badge.voice { background: #ff9800; color: #000; }
+.warning-badge.weak { background: #f44336; color: #fff; }
+.warning-badge.unstable { background: #ffeb3b; color: #000; }
+.progress-container {
+display: none;
+padding: 4px 10px;
+background: #e3f2fd;
+border-bottom: 1px solid #bbdefb;
+}
+.progress-container.show { display: block; }
+.progress-bar {
+height: 4px;
+background: #bbdefb;
+border-radius: 2px;
+overflow: hidden;
+}
+.progress-fill {
+height: 100%;
+background: var(--primary);
+width: 0%;
+transition: width .2s;
+}
+.progress-text {
+font-size: 9px;
+color: var(--primary);
+text-align: center;
+margin-top: 2px;
+font-weight: 900;
+}
+.position-mode { display: none; flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+.position-mode.active { display: flex; flex-direction: column; }
+.position-display {
+padding: 16px;
+background: var(--bg-dark);
+text-align: center;
+}
+.signal-meter {
+position: relative;
+width: clamp(200px, 56vw, 260px);
+height: clamp(200px, 56vw, 260px);
+margin: 0 auto 8px;
+transition: opacity .2s;
+flex-shrink: 0;
+}
+.signal-meter.unstable { opacity: .6; }
+.meter-bg { display: none; }
+.meter-contact-canvas {
+position: absolute;
+top: 0; left: 0;
+width: 100%; height: 100%;
+}
+.meter-mask { display: none; }
+.meter-needle { display: none; }
+.meter-value {
+position: absolute;
+top: 0; left: 0; right: 0; bottom: 0;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+text-align: center;
+pointer-events: none;
+gap: 0;
+}
+.contact-ring-value {
+font-size: clamp(36px, 12vw, 52px);
+font-weight: 900;
+color: #fff;
+line-height: 1;
+text-shadow: 0 0 20px currentColor;
+transition: color .3s, text-shadow .3s;
+}
+.contact-ring-label {
+font-size: 8px;
+color: rgba(255,255,255,.4);
+font-weight: 700;
+letter-spacing: 1px;
+margin-top: 1px;
+text-transform: uppercase;
+}
+.contact-ring-sq {
+font-size: clamp(18px, 5vw, 22px);
+font-weight: 900;
+margin-top: 3px;
+transition: color .3s;
+color: rgba(255,255,255,0.3);
+line-height: 1;
+}
+.contact-ring-sq-label {
+font-size: 7px;
+color: rgba(255,255,255,.28);
+letter-spacing: .5px;
+margin-top: 1px;
+}
+/* tilt inside ring */
+.tilt-inside {
+display: flex;
+align-items: center;
+gap: 6px;
+margin-top: 4px;
+}
+.tilt-dot-wrap {
+position: relative;
+width: 36px;
+height: 36px;
+flex-shrink: 0;
+}
+.tilt-inside svg {
+position: absolute; top:0; left:0;
+}
+.tilt-inside-label {
+font-size: 8px;
+color: rgba(255,255,255,.35);
+font-weight: 700;
+letter-spacing: .5px;
+}
+.tilt-inside-hint {
+font-size: 9px;
+font-weight: 700;
+transition: color .3s;
+}
+.best-score {
+display: flex;
+justify-content: center;
+gap: 20px;
+margin-bottom: 12px;
+flex-wrap: wrap;
+}
+.best-item {
+text-align: center;
+padding: 8px 16px;
+background: rgba(255,255,255,.05);
+border-radius: 8px;
+min-width: 140px;
+}
+.best-value { font-size: 20px; font-weight: 900; color: #4caf50; }
+.best-label { font-size: 8px; color: rgba(255,255,255,.5); text-transform: uppercase; font-weight: 900; }
+.best-point { font-size: 9px; color: rgba(255,255,255,.75); font-weight: 900; }
+.position-guide {
+background: rgba(255,255,255,.08);
+border-radius: 8px;
+padding: 10px;
+margin-bottom: 12px;
+}
+.guide-text {
+font-size: 12px;
+color: #fff;
+font-weight: 900;
+text-align: center;
+}
+.guide-hint {
+font-size: 9px;
+color: rgba(255,255,255,.65);
+text-align: center;
+margin-top: 4px;
+font-weight: 900;
+}
+.motion-hint {
+background: rgba(255,152,0,.15);
+border: 1px solid rgba(255,152,0,.3);
+border-radius: 8px;
+padding: 8px 12px;
+margin-bottom: 12px;
+display: none;
+text-align: center;
+}
+.motion-hint.active { display: block; }
+.motion-hint-text {
+font-size: 11px;
+color: #ff9800;
+font-weight: 900;
+}
+.contact-indicator {
+background: rgba(255,255,255,.06);
+border-radius: 8px;
+padding: 8px 10px;
+margin-bottom: 12px;
+}
+.contact-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 6px;
+}
+.contact-title {
+font-size: 9px;
+color: rgba(255,255,255,.6);
+font-weight: 900;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+}
+.contact-level {
+font-size: 10px;
+font-weight: 900;
+padding: 2px 8px;
+border-radius: 10px;
+}
+.contact-level.weak { color: #f44336; background: rgba(244,67,54,.2); }
+.contact-level.moderate { color: #ff9800; background: rgba(255,152,0,.2); }
+.contact-level.good { color: #8bc34a; background: rgba(139,195,74,.2); }
+.contact-level.excellent { color: #4caf50; background: rgba(76,175,80,.2); }
+.contact-bar-wrap {
+background: rgba(0,0,0,.3);
+border-radius: 4px;
+height: 8px;
+overflow: hidden;
+}
+.contact-bar-fill {
+height: 100%;
+border-radius: 4px;
+transition: width 0.2s, background 0.2s;
+width: 0%;
+}
+.trend-container {
+background: rgba(255,255,255,.06);
+border-radius: 8px;
+padding: 8px 10px;
+margin-bottom: 12px;
+}
+.trend-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 6px;
+}
+.trend-title {
+font-size: 9px;
+color: rgba(255,255,255,.6);
+font-weight: 900;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+}
+.trend-status {
+font-size: 10px;
+font-weight: 900;
+padding: 2px 8px;
+border-radius: 10px;
+background: rgba(255,255,255,.1);
+}
+.trend-status.improving { color: #4caf50; background: rgba(76,175,80,.2); }
+.trend-status.declining { color: #f44336; background: rgba(244,67,54,.2); }
+.trend-status.stable { color: #ffc107; background: rgba(255,193,7,.2); }
+.trend-canvas-wrap {
+background: rgba(0,0,0,.3);
+border-radius: 6px;
+overflow: hidden;
+height: 44px;
+}
+#trendCanvas {
+display: block;
+width: 100%;
+height: 44px;
+}
+.comparison-section {
+padding: 12px;
+background: #f8f9fa;
+}
+.comparison-title {
+font-size: 10px;
+font-weight: 900;
+color: #333;
+margin-bottom: 8px;
+}
+.comparison-bars { display: flex; flex-direction: column; gap: 6px; }
+.comp-bar { display: flex; align-items: center; gap: 8px; }
+.comp-label { width: 70px; font-size: 9px; color: #666; font-weight: 900; }
+.comp-track {
+flex: 1;
+height: 18px;
+background: #e0e0e0;
+border-radius: 9px;
+overflow: hidden;
+position: relative;
+}
+.comp-fill {
+height: 100%;
+border-radius: 9px;
+transition: width .2s, background .2s;
+display: flex;
+align-items: center;
+justify-content: flex-end;
+padding-right: 6px;
+min-width: 0;
+}
+.comp-value {
+font-size: 9px;
+font-weight: 900;
+color: #fff;
+text-shadow: 0 1px 2px rgba(0,0,0,.4);
+}
+.ring-mode { display: none; }
+.ring-mode.active { display: block; }
+.ring-section {
+padding: 16px;
+background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+margin: 8px 12px;
+border-radius: 12px;
+}
+.ring-container {
+width: 220px;
+height: 220px;
+margin: 0 auto;
+position: relative;
+}
+.ring-base {
+position: absolute;
+inset: 0;
+border-radius: 50%;
+background: rgba(255,255,255,0.05);
+border: 2px solid rgba(255,255,255,0.15);
+}
+.ring-segment {
+position: absolute;
+inset: 0;
+border-radius: 50%;
+transform-origin: center;
+transition: opacity 0.3s;
+}
+.ring-label {
+position: absolute;
+font-size: 9px;
+font-weight: 900;
+color: #fff;
+transform: translate(-50%, -50%);
+text-align: center;
+line-height: 1.2;
+text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+white-space: pre-line;
+}
+.ring-center {
+position: absolute;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+background: rgba(0,0,0,0.5);
+width: 70px;
+height: 70px;
+border-radius: 50%;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+border: 2px solid rgba(255,255,255,0.2);
+}
+.ring-center-value {
+font-size: 18px;
+font-weight: 900;
+color: #4caf50;
+transition: color 0.3s;
+}
+.ring-center-label {
+font-size: 7px;
+color: rgba(255,255,255,0.7);
+text-transform: uppercase;
+font-weight: 900;
+}
+.ring-legend {
+display: flex;
+justify-content: center;
+flex-wrap: wrap;
+gap: 10px;
+margin-top: 12px;
+}
+.ring-legend-item {
+display: flex;
+align-items: center;
+gap: 4px;
+font-size: 8px;
+color: rgba(255,255,255,0.85);
+font-weight: 900;
+}
+.ring-legend-dot {
+width: 12px;
+height: 12px;
+border-radius: 3px;
+}
+.ring-bars {
+margin-top: 12px;
+padding-top: 12px;
+border-top: 1px solid rgba(255,255,255,0.1);
+}
+.ring-bars .comparison-title {
+color: rgba(255,255,255,0.8);
+margin-bottom: 8px;
+}
+.ring-bars .comp-label {
+color: rgba(255,255,255,0.7);
+}
+.ring-bars .comp-track {
+background: rgba(255,255,255,0.15);
+}
+.visual-mode { display: none; }
+.visual-mode.active { display: block; }
+.visual-disclaimer {
+background: #fff3e0;
+padding: 6px 10px;
+font-size: 8px;
+color: #e65100;
+text-align: center;
+border-bottom: 1px solid #ffe0b2;
+font-weight: 900;
+}
+.waveform-container {
+height: 180px;
+background: var(--bg-dark);
+position: relative;
+overflow: hidden;
+}
+.waveform-canvas {
+width: 100%;
+height: 100%;
+position: absolute;
+inset: 0;
+}
+.wave-overlay {
+position: absolute;
+font-size: 10px;
+padding: 3px 6px;
+background: rgba(0,0,0,.6);
+border-radius: 4px;
+font-weight: 900;
+}
+.wave-overlay.top-left { top: 6px; left: 6px; color: #4caf50; }
+.wave-overlay.top-right { top: 6px; right: 6px; color: #fff; }
+.wave-overlay.bottom-left { bottom: 6px; left: 6px; color: #2196f3; }
+.hr-display { font-size: 12px; }
+.hr-value { font-size: 22px; font-weight: 900; }
+.visual-metrics {
+display: flex;
+justify-content: space-around;
+padding: 10px;
+background: #f5f5f5;
+border-top: 1px solid #e0e0e0;
+}
+.v-metric { text-align: center; }
+.v-metric-label { font-size: 8px; color: #888; text-transform: uppercase; font-weight: 900; }
+.v-metric-value { font-size: 14px; font-weight: 900; color: #333; }
+.visual-legend {
+display: flex;
+justify-content: center;
+gap: 12px;
+padding: 6px;
+background: #fafafa;
+border-top: 1px solid #eee;
+}
+.legend-item { display: flex; align-items: center; gap: 4px; font-size: 8px; color: #666; font-weight: 900; }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+.controls {
+display: flex;
+flex-wrap: wrap;
+gap: 6px;
+padding: 10px 12px;
+padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
+background: #f5f5f5;
+border-top: 1px solid #e0e0e0;
+flex-shrink: 0;
+}
+.btn {
+flex: 1 1 calc(33% - 6px);
+min-width: 80px;
+padding: 10px;
+border: none;
+border-radius: 8px;
+font-size: 11px;
+font-weight: 900;
+cursor: pointer;
+transition: transform .1s, box-shadow .1s;
+text-transform: uppercase;
+user-select: none;
+touch-action: manipulation;
+}
+.btn:active { transform: scale(0.96); }
+.btn-start {
+background: linear-gradient(135deg, #4caf50, #2e7d32);
+color: #fff;
+flex: 1 1 100%;
+}
+.btn-stop {
+background: linear-gradient(135deg, #f44336, #c62828);
+color: #fff;
+flex: 1 1 100%;
+display: none;
+}
+.btn-reset { background: #ff9800; color: #fff; }
+.btn-ring { background: #9c27b0; color: #fff; }
+.btn-export { background: #607d8b; color: #fff; }
+.btn-recal { background: #00bcd4; color: #fff; display: none; }
+.btn-record { background: #e53935; color: #fff; }
+.btn-record.recording { background: #b71c1c; animation: recPulse 1s infinite; }
+@keyframes recPulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header" id="headerEl">
+<h1>🫀 Cardiac Trainer</h1>
+<div style="display:flex;align-items:center;gap:6px;">
+  <div class="mini-pill" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);">
+    <div class="mini-dot" id="stabilityDot"></div>
+    <span id="stabilityText" style="font-size:7px;font-weight:900;">--</span>
+  </div>
+  <span class="badge">v7.0.156</span>
+</div>
+</div>
+<div class="mode-tabs">
+<button class="mode-tab active" id="tabPosition"><span class="tab-icon">🎯</span>Position</button>
+<button class="mode-tab" id="tabRing" style="display:none;"><span class="tab-icon">⭕</span>Ring</button>
+<button class="mode-tab" id="tabVisual"><span class="tab-icon">〰️</span>Waveform</button>
+</div>
+<div class="point-selector">
+<label>AUSCULTATION POINT</label>
+<select id="pointSelect">
+<option value="aortic">Aortic (2nd R ICS)</option>
+<option value="pulmonary">Pulmonary (2nd L ICS)</option>
+<option value="tricuspid">Tricuspid (4th L ICS)</option>
+<option value="mitral" selected>Mitral Apex (5th L MCL)</option>
+<option value="erb">Erb's Point (3rd L ICS)</option>
+</select>
+</div>
+<div class="status-bar">
+<div class="status-left">
+<span id="statusText">⚪ Ready</span>
+<div class="mini-pill">
+<div class="mini-dot" id="stabilityDot"></div>
+<span id="stabilityText">--</span>
+</div>
+</div>
+<div>
+<span class="warning-badge voice" id="voiceBadge">VOICE</span>
+<span class="warning-badge weak" id="weakBadge">WEAK</span>
+<span class="warning-badge unstable" id="unstableBadge">MOVE</span>
+</div>
+</div>
+<div class="progress-container" id="progressContainer">
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<p class="progress-text" id="progressText">📱 Place phone on auscultation point</p>
+</div>
+<div class="position-mode active" id="positionMode">
+<div class="position-display">
+<!-- RING: одиночный круг, дуга=Contact%, внутри Contact + SQ + Tilt -->
+<div class="signal-meter" id="signalMeter">
+<canvas class="meter-contact-canvas" id="contactRingCanvas"></canvas>
+<div class="meter-needle" id="meterNeedle"></div>
+<div class="meter-value">
+  <div class="contact-ring-value" id="contactRingValue">--</div>
+  <div class="contact-ring-label">CONTACT</div>
+  <div class="contact-ring-sq" id="signalPercent">--</div>
+  <div class="contact-ring-sq-label">SQ%</div>
+  <!-- tilt inside ring -->
+  <div class="tilt-inside" id="tiltInside">
+    <div class="tilt-dot-wrap">
+      <svg width="36" height="36" style="opacity:0.2;">
+        <circle cx="18" cy="18" r="16" fill="none" stroke="white" stroke-width="1"/>
+        <circle cx="18" cy="18" r="7" fill="none" stroke="white" stroke-width="1"/>
+        <line x1="18" y1="2" x2="18" y2="34" stroke="white" stroke-width="1"/>
+        <line x1="2" y1="18" x2="34" y2="18" stroke="white" stroke-width="1"/>
+      </svg>
+      <div id="tiltDot" style="position:absolute;width:7px;height:7px;border-radius:50%;background:#4caf50;top:14px;left:14px;transition:top .15s,left .15s,background .3s;box-shadow:0 0 5px rgba(76,175,80,0.9);"></div>
+    </div>
+    <div>
+      <div class="tilt-inside-label">TILT</div>
+      <div class="tilt-inside-hint" id="tiltHint" style="color:rgba(255,255,255,0.4);">--</div>
+      <div style="display:none;" id="tiltLabel"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- old tilt block hidden for compat -->
+<div id="tiltIndicator" style="display:none;">
+  <span id="tiltLabelOld"></span>
+</div>
+
+<!-- BPM + S1/S2/SNR -->
+<div id="positionBpmBlock" style="display:flex;align-items:center;justify-content:center;gap:16px;background:rgba(0,0,0,0.25);border-radius:10px;padding:8px 16px;margin:0 0 6px;">
+  <div style="text-align:center;">
+    <div id="positionHrValue" style="font-size:46px;font-weight:900;color:#fff;line-height:1;letter-spacing:-1px;">--</div>
+    <div style="font-size:9px;color:rgba(255,255,255,0.55);font-weight:700;letter-spacing:1px;margin-top:1px;">BPM</div>
+  </div>
+  <div style="text-align:left;">
+    <div id="positionPhaseLabel" style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.5);height:16px;"></div>
+    <div id="positionS1S2" style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">S1: -- &nbsp; S2: --</div>
+    <div id="positionSnr" style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:1px;">SNR -- dB</div>
+    <div class="sq-snr" id="snrDisplay" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- GUIDE -->
+<div class="position-guide">
+<p class="guide-text" id="guideText">Press START to begin</p>
+<p class="guide-hint" id="guideHint">Move device slowly to find strongest signal</p>
+</div>
+<div class="motion-hint" id="motionHint">
+<span class="motion-hint-text" id="motionHintText">🤲 Hold steady</span>
+</div>
+
+<!-- BEST SESSION / BEST AT POINT — внизу перед кнопками -->
+<div class="best-score" style="margin-top:auto;padding-top:6px;">
+<div class="best-item">
+<div class="best-value" id="bestSession">--</div>
+<div class="best-label">Best Session</div>
+<div class="best-point" id="bestPoint">--</div>
+</div>
+<div class="best-item">
+<div class="best-value" id="currentPointBest">--</div>
+<div class="best-label">Best at Point</div>
+<div class="best-point" id="currentPointLabel">Mitral</div>
+</div>
+</div>
+
+<!-- hidden compat elements -->
+<div style="display:none;">
+<div class="signal-label"></div>
+<div id="contactIndicator"><span id="contactLevel"></span><div id="contactBarFill"></div></div>
+<div id="pressureBarFill"></div><span id="pressureLabel"></span>
+<div id="trendContainer"><span id="trendStatus">--</span><canvas id="trendCanvas" width="280" height="44"></canvas></div>
+</div>
+</div>
+<div class="comparison-section">
+<h3 class="comparison-title">📊 Compare All Points</h3>
+<div class="comparison-bars">
+<div class="comp-bar"><div class="comp-label">Aortic</div><div class="comp-track"><div class="comp-fill" id="aorticBar"></div></div></div>
+<div class="comp-bar"><div class="comp-label">Pulmonary</div><div class="comp-track"><div class="comp-fill" id="pulmonaryBar"></div></div></div>
+<div class="comp-bar"><div class="comp-label">Tricuspid</div><div class="comp-track"><div class="comp-fill" id="tricuspidBar"></div></div></div>
+<div class="comp-bar"><div class="comp-label">Mitral</div><div class="comp-track"><div class="comp-fill" id="mitralBar"></div></div></div>
+<div class="comp-bar"><div class="comp-label">Erb's</div><div class="comp-track"><div class="comp-fill" id="erbBar"></div></div></div>
+</div>
+</div>
+</div>
+<div class="ring-mode" id="ringMode">
+<div class="ring-section">
+<div class="ring-container" id="ringContainer">
+<div class="ring-base"></div>
+<div class="ring-center">
+<div class="ring-center-value" id="ringCenterValue">--</div>
+<div class="ring-center-label">Best</div>
+</div>
+</div>
+<div class="ring-legend">
+<div class="ring-legend-item"><div class="ring-legend-dot" style="background:#4caf50;"></div><span>>70% Excellent</span></div>
+<div class="ring-legend-item"><div class="ring-legend-dot" style="background:#8bc34a;"></div><span>50-70% Good</span></div>
+<div class="ring-legend-item"><div class="ring-legend-dot" style="background:#ffc107;"></div><span>30-50% Fair</span></div>
+<div class="ring-legend-item"><div class="ring-legend-dot" style="background:#f44336;"></div><span><30% Weak</span></div>
+</div>
+<div class="ring-bars">
+<h3 class="comparison-title">All Points</h3>
+<div class="comparison-bars">
+<div class="comp-bar"><div class="comp-label">Aortic</div><div class="comp-track"><div class="comp-fill" id="aorticBarRing"></div></div></div>
+<div class="comp-bar"><div class="comp-label">Pulmonary</div><div class="comp-track"><div class="comp-fill" id="pulmonaryBarRing"></div></div></div>
+<div class="comp-bar"><div class="comp-label">Tricuspid</div><div class="comp-track"><div class="comp-fill" id="tricuspidBarRing"></div></div></div>
+<div class="comp-bar"><div class="comp-label">Mitral</div><div class="comp-track"><div class="comp-fill" id="mitralBarRing"></div></div></div>
+<div class="comp-bar"><div class="comp-label">Erb's</div><div class="comp-track"><div class="comp-fill" id="erbBarRing"></div></div></div>
+</div>
+</div>
+</div>
+</div>
+<div class="visual-mode" id="visualMode">
+<div class="visual-disclaimer">⚠️ Educational visualization only — not for diagnosis</div>
+<div class="waveform-container">
+<canvas id="waveformCanvas" class="waveform-canvas"></canvas>
+<canvas id="spectrogramCanvas" class="waveform-canvas"></canvas>
+<div class="wave-overlay top-left" id="phaseLabel">Phase: --</div>
+<div class="wave-overlay top-right hr-display"><span class="hr-value" id="hrValue">--</span> bpm</div>
+<div class="wave-overlay bottom-left" id="pointLabel">Mitral</div>
+</div>
+<div class="visual-metrics">
+<div class="v-metric"><div class="v-metric-label">S1</div><div class="v-metric-value" id="s1Value">--</div></div>
+<div class="v-metric"><div class="v-metric-label">S2</div><div class="v-metric-value" id="s2Value">--</div></div>
+<div class="v-metric"><div class="v-metric-label">SNR</div><div class="v-metric-value" id="snrMetric">--</div></div>
+<div class="v-metric"><div class="v-metric-label">Murmur</div><div class="v-metric-value" id="murmurValue">--</div></div>
+</div>
+<div class="visual-legend">
+<div class="legend-item"><div class="legend-dot" style="background:#2196f3;"></div>Waveform</div>
+<div class="legend-item"><div class="legend-dot" style="background:#f44336;"></div>Envelope</div>
+<div class="legend-item"><div class="legend-dot" style="background:#4caf50;"></div>Peaks</div>
+<div class="legend-item"><div class="legend-dot" style="background:#ff9800;"></div>Spectrogram</div>
+</div>
+</div>
+<div class="controls">
+<button class="btn btn-start" id="startBtn">▶ START</button>
+<button class="btn btn-stop" id="stopBtn">⏹ STOP</button>
+<button class="btn btn-reset" id="resetBtn">↺ Reset</button>
+<button class="btn btn-ring" id="ringBtn">⭕ Ring</button>
+<button class="btn btn-export" id="exportBtn">📥 Export</button>
+<button class="btn btn-recal" id="recalBtn">🔧 Recal</button>
+<button class="btn btn-record" id="recordBtn" style="display:none;">⏺ RECORD</button>
+</div>
+</div>
+<script>
+'use strict';
+/**
+* Cardiac Auscultation Trainer v7.0.110
+*
+* CHANGELOG v7.0.149 (March 2026):
+* MERGE: v7.0.148 UI + v7.0.145 алго фиксы
+*  Алго FIX 1: +erb2x guard — первый seed на Erb's >90 bpm → делить на 2
+*    Problem: BPM=150/145 как первый seed (lag:0.55s = S1→S2 lag)
+*    Fix: !hrSeeded && erb && BPM>90 → half → +erb2x
+*  Алго FIX 2: lag guard T/A 2.0→3.5
+*    Problem: BPM=40 при T/A=3.6 (lag guard не сработал)
+*    Fix: lastTissueRatio < 3.5 вместо 2.0
+*  UI FIX: Fullscreen Samsung Internet
+*    Fix: html/body height:100% + container position:fixed
+*    Safe-area-inset-bottom для iPhone notch
+*  Base: v7.0.148 (UI) + v7.0.145 (algo)
+*
+* CHANGELOG v7.0.148 (March 2026):
+* FIX: один круг (убран meter-bg/mask дублёр) + новый порядок элементов
+*  Проблема: meter-bg (старый серый круг) + новый canvas = два круга
+*  Порядок элементов (новый):
+*    1. Круг (Contact дуга + SQ внутри)
+*    2. Tilt angle (позиционирование)
+*    3. BPM + S1/S2/SNR (клинические данные)
+*    4. Guide text (подсказка)
+*    5. Best Session / Best at Point (статистика)
+*    6. START кнопка
+*  Base: v7.0.146
+*
+* CHANGELOG v7.0.146 (March 2026):
+* UI REDESIGN: круг = Contact Level, SQ цифра с цветом, без скролла
+*  Круг (спидометр):
+*    - Было: Signal Quality % (акустическое качество)
+*    - Стало: Contact Level % (прижатие к коже 0-100%)
+*    - Нет контакта → дуга серая/пустая
+*    - Есть контакт → дуга заполняется, цвет красный→зелёный
+*    - Цифра внутри круга = contactLevel % с цветом
+*  SQ (Signal Quality):
+*    - Крупная цифра над BPM блоком
+*    - Цвет меняется 0-100%: красный→оранжевый→жёлтый→зелёный
+*    - Убран отдельный label "SIGNAL QUALITY"
+*  Убраны: Body Contact bar, Pressure bar (дублировали круг)
+*  Компактный layout: всё без скролла на Samsung S24
+*  Base: v7.0.143
+*
+* CHANGELOG v7.0.143 (March 2026):
+* UI: Pressure bar + Tilt crosshair indicators
+*  Pressure bar: contactLevel 0-100% → цветная полоса + текст
+*    <25% Too light (red) / <50% Light (orange) / <75% Moderate (yellow)
+*    <90% Firm ✓ (lime) / 90%+ Optimal ✓ (green)
+*  Tilt crosshair: 60px круг с точкой
+*    Точка в центре = оптимальный угол (baseline из калибровки)
+*    Точка смещается при отклонении ±25°
+*    Цвет: green <5° / yellow <12° / red >12°
+*    Текст подсказки: ← → ↑ ↓ направление коррекции
+*  Risk: нулевой — только новые DOM элементы + чтение существующих переменных
+*  Base: v7.0.142
+*
+* CHANGELOG v7.0.142 (March 2026):
+* UI REDESIGN — BPM в Position tab, Ring tab убран
+*  Problem: BPM виден только в Visual tab → нужно переключать таб одной рукой
+*           Ring tab дублирует Position, не добавляет ценности
+*  Fix 1: BPM блок добавлен в Position tab под кругом качества
+*          Показывает ЧСС + фазу (Systole/Diastole) всегда в основном виде
+*  Fix 2: Ring tab скрыт — остаются Position + Visual (2 таба)
+*  Fix 3: Visual tab переименован в Waveform для ясности
+*  Base: v7.0.140 (все алгоритмические фиксы сохранены)
+*
+* CHANGELOG v7.0.140 (March 2026):
+* FIX 1: thrBase seeded Erb's 0.06 → 0.08 (partial rollback from 0.09)
+*  Problem: v7.0.139 thr:0.06 accepts rP:0.05–0.07 at T/A=1.1 (noisy contact)
+*           Noisy autocorr at T/A<2.0 detects double period → BPM=41 (real ~85)
+*           v7.0.138 thr:0.09 was too high; 0.08 is the optimal balance
+*  Fix: 0.08 — rejects rP:0.05–0.07 at T/A=1.1, accepts rP:0.08+ at T/A=3.5+
+*
+* FIX 2: Anti-subharmonic lag guard for seeded state at Erb's
+*  Problem: BPM=41 from lag:1.40s while real HR~85 (confirmed by BPM=85 same session)
+*           Existing sh21 guard (ratio 0.40–0.55) fires only when hrConfirmed
+*           At T/A<2.0 (noisy) autocorr reliably picks double-period lag
+*  Fix: if currentPoint==='erb' && lag > 1.0s && T/A < 2.0 → double the BPM
+*       Condition: lagSecs > 1.0 means BPM candidate < 60 — physiologically
+*       unlikely at rest; T/A<2.0 means noisy contact = unreliable lag
+*       Applied before hr-jump check so corrected value can pass jump guard
+*  Risk: may over-correct genuine bradycardia <60bpm at Erb's with poor contact
+*        Acceptable: poor contact (T/A<2.0) should not produce confident BPM anyway
+*  Base: v7.0.139
+*
+* CHANGELOG v7.0.139 (March 2026):
+* FIX 1: thrBase seeded Erb's 0.09 → 0.06
+*  Problem: v7.0.138 test shows rP:0.04–0.07 at Erb's during real contact (H:20–33)
+*           thr:0.09 still blocks → gate:periodicity-low on multiple frames
+*  Fix: lower to 0.06 — accepts rP:0.04+ at confirmed Erb's contact
+*  Risk: very weak autocorr may pass; median buffer (Fix 2) + hr-jump guard protect
+*
+* FIX 2: BPM median buffer (last 5) for Erb's Point
+*  Problem: rP:0.04–0.07 gives noisy autocorr → BPM jumps 50→100→86→93→74
+*           Sticky hold (hrLastValidBpm) preserves any value including outliers
+*  Fix: erbBpmBuffer[] stores last 5 valid BPM values at Erb's
+*       Output = median(buffer) instead of raw autocorr result
+*       Median rejects outliers: [50,74,100,74,86] → 74
+*  Risk: 5-frame lag (~0.5s at 10fps) before BPM stabilizes — acceptable
+*
+* FIX 3: Sticky BPM hold limit 8s → 3s for Erb's
+*  Problem: HR_STALE_MS=8000ms — stale BPM shown for 8s after last update
+*           At Erb's gate:silent cycles frequently → BPM may be 8s old
+*           User sees confident-looking BPM that is actually stale
+*  Fix: for Erb's use 3s stale limit — faster visual feedback when signal lost
+*  Risk: BPM may flash '--' briefly during normal silent frames at Erb's
+*  Base: v7.0.138
+*
+* CHANGELOG v7.0.138 (March 2026):
+* FIX 1: thrBase seeded Erb's 0.13 → 0.09
+*  Problem: v7.0.137 test shows rP:0.07–0.09 at Erb's during confirmed contact
+*           T/A≈1.0 (high aE=136–167) degrades autocorr → systematic low rP
+*           thrBase=0.13 still blocks → gate:periodicity-low on 4/6 frames
+*  Fix: lower to 0.09 — matches bottom of observed rP range at real contact
+*  Risk: very weak periodicity may pass; hrConfirmed smoothing + hr-jump guard
+*        (MAX_JUMP_RATIO_ERB=0.35) provide protection
+*
+* FIX 2: first-lock 1:2 subharmonic guard (×2) for unseeded state
+*  Problem: BPM=40 at first lock (lag:1.50s → 60/1.50=40, real HR~80)
+*           Existing sh21 guard only fires when hrSeeded && hrConfirmed
+*           At first lock (!hrSeeded) → 1:2 subharmonic not corrected
+*  Fix: add first-lock guard — if !hrSeeded && BPM<55 && SNR<3.0 → multiply ×2
+*       Mirrors existing fl2x (superharmonic) logic but for subharmonic direction
+*  Risk: low — only fires unseeded + BPM<55 + low SNR (Erb's typical)
+*  Base: v7.0.137
+*
+* CHANGELOG v7.0.137 (March 2026):
+* FIX 1: thrBase seeded Erb's 0.18 → 0.13
+*  Problem: v7.0.136 test shows rP:0.09–0.16 at Erb's during real contact
+*           thrBase=0.18 (seeded) blocks valid periodicity → gate:periodicity-low → BPM=--
+*  Fix: lower seeded Erb's threshold to 0.13 — matches observed rP range
+*  Risk: may accept weaker periodicity signal; hr-jump guard (MAX_JUMP_RATIO_ERB=0.35)
+*        and hrConfirmed smoothing provide secondary protection vs false BPM
+*
+* FIX 2: first-lock superharmonic guard — halve BPM>100 when rP<0.15 regardless of SNR
+*  Problem: BPM=150 appeared at rP:0.12 (unseeded, Erb's) — first-lock SNR guard
+*           (SNR<3.0) did not fire because currentSNR may differ from displayed SNR
+*  Fix: add rP-based guard — if !hrSeeded && BPM>100 && selectedPeak<0.15 → halve
+*       This catches superharmonic (S1→S2 lag) at low autocorr confidence
+*  Risk: low — only fires when unseeded AND BPM>100 AND very weak periodicity
+*  Base: v7.0.136
+*
+* CHANGELOG v7.0.136 (March 2026):
+* FIX: silence bypass for Erb's Point — bone contact gives low rms, not silence
+*  Problem: Erb's Point = bone/cartilage → high FFT heartEnergy (H:43–74) but low
+*           broadband RMS (rms:17–28) → isSilent=true → signalOK=false → gate:silent
+*           BPM never outputs despite good contact (T/A:3.1–3.5, CC confirmed)
+*  Fix 1: hrGate signalOK — bypass isSilent when heartEnergy > 15 at Erb's
+*          (H>15 = real cardiac energy, not ambient noise)
+*  Fix 2: seedMode seedSignalOK — same bypass so first BPM seed is not blocked
+*  Logic: isErbsSilentBypass = (currentPoint==='erb') && heartEnergy > 15
+*         signalOK = (!isSilent || isErbsSilentBypass) && heartEnergy >= HR_SIGNAL_MIN
+*  Risk: low — bypass conditioned on heartEnergy>15 (requires real body contact)
+*  Base: v7.0.135
+*
+* CHANGELOG v7.0.133 (March 2026):
+* FIX 1: seedSNRok threshold 0.0 → -3.0 dB
+*  Problem: Erb's Point SNR typically -10..+2 dB → seedSNRok=false → first BPM never seeded
+*  Fix: lower threshold to -3.0 dB — autocorr thrBase=0.12 remains final guard vs false BPM
+*  Base: v7.0.132
+*
+* FIX 2: SILENCE.DURATION_MAX_MS 6000 → 12000 ms
+*  Problem: brief rms drops at Erb's triggered silence→recal too quickly
+*  Fix: double the window — reduces false recal events during normal auscultation
+*  Base: v7.0.132
+*
+* CHANGELOG v7.0.110 (March 2026):
+* SOFT MOTION in hrGate — BPM survives light movement
+*  Problem: motionOK = isStable && !isShaking → any drift resets motionStableSince
+*           After motion ends → wait gateMotionMs (500–1000ms) again → BPM=0
+*           Kадры с motion freeze: SQ=27–51, BPM=0 despite good signal
+*  Fix: hrGate uses softMotionOK = !isShaking (only active shaking blocks)
+*       isStable still used for CAL/WAITING state machine (unchanged)
+*       motionStableSince tracks softMotionOK (not motionOK)
+*  Expected: BPM survives breathing movement, minor body drift
+*  Risk: may keep BPM during moderate movement — monitor for false values
+*  Base: v7.0.109
+*
+* CHANGELOG v7.0.109 (March 2026):
+* LOWER SEED THRESHOLD — easier first BPM detection (0.24→0.12)
+*  Problem: v7.0.106 test showed voice (rms:237, V:20.5) triggered BPM
+*           rP:0.55 src:raw while T/A=0.9 (not real chest contact)
+*  Fix: added voiceGateOK = voiceEnergy < heartEnergy * 1.5 to hrGate
+*  Behavior: voice pauses BPM calculation (like artifact/motion freeze)
+*            does NOT reset stable counters — resumes immediately after voice stops
+*  Expected: no BPM output during speech; BPM resumes within 1-2s after silence
+*
+* CHANGELOG v7.0.106 (March 2026):
+* artifact soft penalty (removed from CAL hard gate)
+*  1. MIN_BASELINE_ENERGY: 5.0→1.0 (5.0 rejected valid body-contact calibrations)
+*  2. Adaptive noise drift in LIVE: slow upward-only tracking (α=0.998) prevents
+*     noise floor from freezing after calibration — compensates thermal/environmental drift
+*  3. NaN guard in onMotion — Android devices can return NaN accelerometer values
+*  4. Adaptive envelope scaling: heartEnergy / (baseline.mean*2) instead of /100
+*     Gives proper dynamic range for autocorrelation regardless of signal amplitude
+*  5. SILENCE.RMS_THRESHOLD: 0.025→0.03 (reduces false non-silence on noisy MEMS)
+*
+* CHANGELOG v7.0.15 (February 2026):
+* PERFORMANCE OPTIMIZATION — UI update frequency optimized
+*  1. UI.UPDATE_MS: 100 ms (10 FPS) — optimal for educational feedback
+*     Reason: Training app doesn't need 30 FPS, 10 FPS is sufficient for educational feedback
+*     Benefit: Better battery life, especially on low-end devices
+*  2. NEEDLE_SMOOTH: 0.18 → 0.35 (increased smoothing for smoother needle at lower update rate)
+*     Result: Needle appears smooth despite fewer updates
+*
+* CHANGELOG v7.0.3 (February 2026):
+* HARDCODE FIXES — Refactored hardcodes to CONFIG
+*  1. Replaced calMean < 0.1 with CONFIG.CALIBRATION.MIN_BASELINE_ENERGY (value: 0.1)
+*  2. Replaced calContactMin = 25 with CONFIG.CALIBRATION.CONTACT_MIN (updated from 35 to 25 in CONFIG)
+*  3. Added CONFIG.CONTACT.LIVE_MIN: 25 for LIVE contactLevel check
+*  4. Fixed export filename to v7_0_3.json (sed bug in previous)
+*
+* CHANGELOG v7.0.2 (February 2026):
+* CALIBRATION FIX — unblocking state machine
+*  1. Fault-tolerant calibration: allow up to 5 bad frames (was: 1 bad = full reset)
+*  2. Contact threshold for WAITING/CALIBRATION: 25 (was: 40, too strict for table/weak contact)
+*  3. MIN_BASELINE_ENERGY: 0.1 (was: 0.5, blocked calibration on real device)
+*  4. Diagnostic status bar: shows C:XX H:XX% values in real-time
+*  5. Shows which condition fails during calibration dropout
+*
+* CHANGELOG v7.0.2 (February 2026):
+* HARDENING — Cross-audit fixes
+*  1. NOISE.FLOOR_MIN 0.5→0.05 (was cutting real cardiac signal)
+*  2. CircularBuffer for envelope (zero-alloc, no push/shift/slice)
+*  3. beforeunload handler (release mic on tab close)
+*  4. DeviceMotion requestPermission before getUserMedia (iOS gesture chain)
+*  5. hzToBin guard when sampleRate=0
+*
+* CHANGELOG v7.0.0 (February 2026):
+* FULL AUDIT & FIX — based on static analysis of v6.9.8
+*
+* CRITICAL FIXES:
+*  1. Removed duplicate CONFIG tail (lines 903-908 SyntaxError)
+*  2. Removed duplicate DOM update block in updateContactIndicator()
+*  3. Unified ALL CONFIG references to nested format (CONFIG.DSP.*, CONFIG.FREQ.*, etc.)
+*  4. Fixed undefined globals: STABLE_WINDOW_MS → CONFIG.CALIBRATION.STABLE_WINDOW_MS
+*     RECAL_SILENCE_MS → CONFIG.SILENCE.DURATION_MAX_MS
+*     RECAL_MOTION_MS → CONFIG.RECALIBRATION.MOTION_TIMEOUT_MS
+*  5. Fixed onMotion() guard: removed isCalibrated check so motion data
+*     is collected during WAITING/CALIBRATION states
+*  6. Fixed recalibration motion logic (was unreachable)
+*  7. Fixed silenceDurationMs using real delta-time instead of assumed 100ms
+*
+* PHYSIOLOGICAL PIPELINE:
+*  8. Added baseline sanity-check (reject calibration if mean energy too low)
+*  9. Added contact hysteresis for LIVE→WAITING transition (debounce 500ms)
+* 10. HR sanity-check with exponential moving average (reject >20% jumps)
+*
+* PERFORMANCE:
+* 11. Cached Hz-lookup array (eliminates binToHz() in hot loops)
+* 12. Reduced drawTrendGraph to 3Hz instead of 10Hz
+* 13. updateComparisonBars only on bestByPoint change
+* 14. Replaced WorkletProcessor spread-push with typed array copy
+* 15. Replaced Math.max(...arr) spread with loop
+*/
+// ============================================================================
+// CONFIGURATION — Single Source of Truth (nested)
+// ============================================================================
+const CONFIG = {
+DSP: {
+FFT_SIZE: 4096,
+BUFFER_SIZE: 2048,
+SAMPLE_RATE_IDEAL: 44100
+},
+FREQ: {
+HEART_LOW: 20,
+HEART_HIGH: 220,
+VOICE_LOW: 300,
+VOICE_HIGH: 3000,
+CONTACT_LOW: 20,
+CONTACT_HIGH: 100,
+HIGH_FREQ_GATE: 1000
+},
+MEMS: {
+CUTOFF: 100,
+MAX_BOOST: 8
+},
+QUALITY: {
+SMOOTH_FACTOR: 0.06,
+WEAK_THRESHOLD: 22,
+SNR_FLOOR: -10,
+SNR_CEILING: 18,
+VOICE_PENALTY_MIN: 0.15,
+VOICE_DOMINANT_FRAMES: 8,
+HDR_PENALTY_MIN: 0.2,
+HDR_LOW_FRAMES: 10
+},
+CALIBRATION: {
+FRAMES_REQUIRED: 40,
+CONTACT_MIN: 25,
+CONTACT_MIN_START: 20,   // v7.0.42: was 30, lowered per expert — MEMS on Erb's gives weak contact
+STABLE_WINDOW_MS: 500,  // v7.0.81: was 1000
+MIN_BASELINE_ENERGY: 1.0,  // v7.0.15: was 5.0 — too strict, rejected real body contact
+TIMEOUT_MS: 15000,
+WAITING_TIMEOUT_MS: 20000,  // v7.0.42: max time in WAITING before soft retry
+VOICE_BLOCK_FRAMES: 8,    // v7.0.42: max consecutive voice-dominant frames before blocking cal
+HDR_BLOCK_FRAMES: 8,      // v7.0.42: max consecutive low-HDR frames before blocking cal
+HEART_CONSISTENCY_FACTOR: 0.6,  // v7.0.42: heartEnergy must exceed MIN_BASELINE * this
+PERIODICITY_MIN: 0.08,    // v7.0.42: lowered from 0.18 — MEMS through clothing gives weak periodicity
+CONTACT_BYPASS_MS: 4000   // v7.0.42: if contact stable > 4s, bypass periodicity gate (MEMS fallback)
+},
+VOICE: {
+RATIO_THRESHOLD: 1.8,
+HOLD_MS: 1500,
+HDR_MIN_LIVE: 0.25,
+HDR_MIN_WAIT_HINT: 0.15
+},
+MOTION: {
+THRESHOLD: 0.25,    // v7.0.42: was 0.12, raised — Samsung accel noise ~0.1-0.2 on table
+SMOOTH_ALPHA: 0.85,
+SMOOTH_BETA: 0.15,
+FREEZE_MS: 500,
+SHAKE_RMS_TH: 0.35, // v7.0.129: was 0.25 — button press ~0.2-0.3 RMS, avoid false shake
+ACCEL_BUFFER_MAX: 20
+},
+TILT: {
+ANGLE_MAX: 35  // v7.0.129: was 20 — Erb's Point requires varied angles during auscultation
+},
+HR: {
+MIN: 40,        // v7.0.124: lowered from 50 to allow subharmonic detection range
+MAX: 150,
+SUBHARM_MIN_DISPLAY: 50,  // v7.0.124: minimum BPM to display (below = subharmonic suspect)
+MIN_BEATS: 8,
+CV_MAX: 0.10,
+AUTOCORR_MIN: 0.3,
+SYSTOLE_FRACTION: 0.35,
+ENV_MAX_SAMPLES: 240,
+MAX_JUMP_RATIO: 0.20,
+MAX_JUMP_RATIO_ERB: 0.35,  // v7.0.135: Erb's signal variability requires wider tolerance
+GATE_CONTACT_MS: 900,   // v7.0.125: was 1800 — too slow to recover after movement
+GATE_MOTION_MS: 1000,
+GATE_SIGNAL_MS: 1600,
+PERIODICITY_WINDOW_SAMPLES: 180
+},
+SILENCE: {
+RMS_THRESHOLD: 0.03,  // v7.0.15: was 0.025 — too sensitive on Android MEMS
+HF_THRESHOLD: 5,
+DURATION_MAX_MS: 12000,  // v7.0.133: was 6000 — longer silence window reduces false recal triggers
+DEBOUNCE_MS: 400,
+PEAK_TO_RMS_MAX: 3.2
+},
+CONTACT: {
+SMOOTH_FACTOR: 0.15,
+LOST_DEBOUNCE_MS: 3500,  // v7.0.129: was 2500 — more tolerance for brief contact loss
+LIVE_MIN: 35,
+LIVE_MIN_ERB: 25,  // v7.0.130: Erb's Point anatomically gives lower contact scores
+MIN_TOTAL_ENERGY: 2.0,
+// v7.0.57: Strategy E — ratio for entry, baseline for quality
+BODY_RATIO_MIN: 1.5,       // minimum body/noise ratio (hand+noise=0.5-1.2, chest=2-10+, Mitral=2+)
+RATIO_SCORE_GAIN: 30,      // maps ratio to score: (ratio-1.0)*30 → ratio2=30, ratio3=60, ratio5=120→capped100
+BASE_ALPHA: 0.995,         // baseline EMA decay
+// Gate pipeline (from v7.0.52)
+AIR_RATIO_CLAMP: 2.3,
+LF_MECH_MIN: 6,
+AIR_CLAMP_MAX: 20,
+FALSE_GREEN_MAX: 12,
+IMPULSE_DERIV_TH: 55,
+IMPULSE_HOLD_MS: 900,
+// Hysteresis
+ENTER_THRESHOLD: 30,       // v7.0.57: ratio=2→score=30 → just enters
+EXIT_THRESHOLD: 12,
+ENTER_HOLD_MS: 800,
+EXIT_HOLD_MS: 2500,  // v7.0.112: was 1500 — slower exit reduces NO_CONTACT flapping
+NO_CONTACT_LEARN_MS: 3000
+},
+ARTIFACT: {
+PEAK_TO_RMS_TH: 12.0,  // v7.0.114: was 6.0 — heartbeat S1/S2 on Erb's has peak/RMS ~7-10, real artifacts >12
+PEAK_TO_RMS_SEVERE_TH: 10.0,  // v7.0.57: from v7.0.52
+CLIP_TH: 0.98,
+CLIP_COUNT_TH: 16,     // v7.0.114: was 8 — reduce false artifact triggers
+CLIP_COUNT_SEVERE_TH: 24,     // v7.0.57: from v7.0.52
+FREEZE_MS: 400,        // v7.0.114: was 800 — shorter freeze window, doesn't block next beat at 60 BPM
+CAL_BLOCK_MS: 1500,
+LF_DELTA_TH: 50,              // v7.0.57: raised from 30 — heartbeat lfDelta 10-25, real impacts >50
+TRANSITION_FREEZE_MS: 500     // v7.0.57: from v7.0.52
+},
+NOISE: {
+ALPHA: 0.95,
+FLOOR_MIN: 0.05,
+SUBTRACTION_GAIN: 1.2,
+RESIDUAL_FLOOR: 0.15,
+PROTECT_LOW_HZ: 30,
+PROTECT_MID_HZ: 200,
+AGGRESSIVE_HZ: 300
+},
+UI: {
+UPDATE_MS: 100,  // v7.0.15: OPTIMIZED — 10 FPS (100ms) for educational app
+NEEDLE_SMOOTH: 0.35,  // v7.0.15: Increased from 0.18 for smoother needle
+HINT_HYSTERESIS_MS: 500,
+RESIZE_DEBOUNCE_MS: 200,
+TREND_DRAW_INTERVAL_MS: 333
+},
+TREND: {
+HISTORY_SIZE: 100,
+ANALYSIS_WINDOW: 30,
+SLOPE_THRESHOLD: 0.25,
+CANVAS_WIDTH: 280,
+CANVAS_HEIGHT: 44
+},
+RECALIBRATION: {
+MOTION_TIMEOUT_MS: 4000,  // v7.0.103: was 2000 — breathing motion triggers reset
+DEBOUNCE_MS: 500
+}
+};
+const POINTS = {
+aortic:    { name: 'Aortic',      angle: 0 },
+pulmonary: { name: 'Pulmonary',   angle: 72 },
+tricuspid: { name: 'Tricuspid',   angle: 144 },
+mitral:    { name: 'Mitral Apex', angle: 216 },
+erb:       { name: "Erb's Point", angle: 288 }
+};
+const POINT_ORDER = ['aortic', 'pulmonary', 'tricuspid', 'mitral', 'erb'];
+// ============================================================================
+// STATE — All mutable application state
+// ============================================================================
+let audioCtx = null, mic = null, analyser = null, stream = null, workletNode = null, zeroGain = null;
+let sampleRate = 0, isRunning = false, isCalibrated = false;
+let currentMode = 'position', currentPoint = 'mitral';
+let calFrames = [];
+let contactCalFrames = [];
+let baseline = { mean: 0, std: 1 }, noiseFloor = null;
+let signalStrength = 0, currentSNR = 0, currentNeedleAngle = -135;
+let signalStrengthPrev = 0; // v7.0.117: SQ rate limiter
+let rr = [], heartRate = 0, hrConfirmed = false;
+let lastPeakMs = 0, lastBeatMs = 0, beatPhase = 0, lastVoiceAt = 0;
+let bestSession = { score: 0, point: '' }, bestByPoint = {};
+let qualityHistory = [], trendDirection = 'stable';
+let contactLevel = 0, contactSmooth = 0;
+let sustainedSignalFrames = 0;  // v7.0.81: Path E accumulator
+let currentContactRaw = 0;
+const motion = { smoothAccel: 0, baseTotal: null, accelBuffer: [], isShaking: false, isTilted: false, currentHint: null };
+const orient = { baseline: null, currentBeta: 0, currentGamma: 0 };
+const stability = { isStable: true, isSoftStable: true };
+let dom = {};
+let reusableFftData = null;
+let reusableTimeDomain = null;
+let reusableDenoiseBuffer = null;
+let lastTimeDomain = null;
+let cachedBinHz = null;
+let lastUIUpdate = 0;
+let lastTrendDraw = 0;
+let resizeTimer = null;
+let isSilent = false;
+let lastMotionAt = 0;
+let motionFrozen = false;
+let lastProcessTime = 0;
+let lastHintShown = null;
+let hintChangeAt = 0;
+let appState = 'NO_CONTACT';  // v7.0.42: start in NO_CONTACT (was WAITING)
+// v7.0.42: Contact hysteresis state
+let confirmedContact = false;
+let contactEnterSince = 0;    // when contactSmooth first went above ENTER_THRESHOLD
+let contactExitSince = 0;     // when contactSmooth first went below EXIT_THRESHOLD
+// v7.0.57: Baseline-adaptive contact (from v7.0.52)
+let contactBaseBody = 0;      // learned baseline for body band
+let contactBaseNoise = 0;     // learned baseline for noise band
+let contactBaseCount = 0;     // how many frames we've learned
+// v7.0.57: Gate pipeline (from v7.0.52)
+let prevGateContact = 0;      // previous frame's gated contact score
+let impulseContactHoldUntil = 0;  // impulse reject hold timestamp
+let noContactSince = 0;       // when we entered NO_CONTACT state (for noise learning timer)
+let waitingConditionsMet = 0;
+let waitingStartAt = 0;
+let lastGoodContactAt = 0;
+let silenceDurationMs = 0;
+let contactLostAt = 0;
+let continuousMotionStart = 0;
+let calBadFrames = 0;
+let calBadStartAt = 0;   // v7.0.42: timer for sustained bad frames during calibration
+let heartEnergy = 0;
+let voiceEnergy = 0;
+let bestByPointDirty = false;
+let voiceDominantFrames = 0;
+let lowHdrFrames = 0;
+let waitVoiceDominantFrames = 0;   // v7.0.42: voice frame counter for WAITING gate
+let waitLowHdrFrames = 0;          // v7.0.42: low-HDR frame counter for WAITING gate
+let waitPeriodicityScore = 0;      // v7.0.42: pre-cal autocorrelation score
+let lastArtifactAt = 0;
+let calVoiceDelayUntil = 0;   // v7.0.42: voice delay — wait 2s after voice before CAL
+let lastLfBandEnergy = 0;          // v7.0.42: previous LF band energy for delta detection
+let envelopeDtEmaMs = 100;         // v7.0.42: EMA of frame interval for periodicity FPS calc
+let lastHDR = 0;
+let silenceStartAt = 0;
+let motionStartAt = 0;
+let calStartAt = 0;
+let lastSignalRMS = 0;
+let lastHfEnergy = 0;
+let lastTissueEnergy = 0;  // v7.0.42: debug
+let lastAirEnergy = 0;     // v7.0.42: debug
+let lastTissueRatio = 0;   // v7.0.42: debug
+let artifactBurstUntil = 0;
+let transitionFreezeUntil = 0;   // v7.0.57: from v7.0.52
+let severeArtifactAt = 0;        // v7.0.57: from v7.0.52
+let periodicityScore = 0;
+let bestLagBpm = 0;
+let hrLastValidAt = 0;      // v7.0.103: timestamp of last valid bpm
+let hrLastValidBpm = 0;     // v7.0.103: last known bpm value
+const HR_STALE_MS = 8000;   // v7.0.103: show stale indicator after 8s
+let erbBpmBuffer = [];      // v7.0.139: last 5 BPM values at Erb's for median smoothing
+// v7.0.155: PCG WAV recorder
+let pcgRecording = false;
+let pcgChunks = [];          // Float32Array chunks from analyser
+let pcgStartTime = 0;
+const PCG_DURATION_MS = 30000; // 30 sec
+let pcgTimerInterval = null;
+let pcgSampleRate = 0;
+let pcgBeatMarkers = [];     // timestamps of detected beats during recording
+let hrGateReason = 'init';
+let contactStableSince = 0;
+let motionStableSince = 0;
+let signalStableSince = 0;
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+const Utils = {
+nowMs: () => performance.now(),
+clamp: (v, lo, hi) => Math.max(lo, Math.min(hi, v)),
+mean: (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0,
+std: (arr) => {
+if (!arr.length) return 1;
+const m = Utils.mean(arr);
+return Math.sqrt(arr.reduce((s, x) => s + (x - m) ** 2, 0) / arr.length) || 1;
+},
+rms: (arr) => Math.sqrt(arr.reduce((s, x) => s + x * x, 0) / arr.length) || 0,
+qualityColor: (score) => {
+if (score >= 70) return '#4caf50';
+if (score >= 50) return '#8bc34a';
+if (score >= 30) return '#ffc107';
+return '#f44336';
+},
+binToHz: (bin) => cachedBinHz ? cachedBinHz[bin] || 0 : (bin * sampleRate / CONFIG.DSP.FFT_SIZE),
+hzToBin: (hz) => sampleRate > 0 ? Math.round(hz * CONFIG.DSP.FFT_SIZE / sampleRate) : 0,
+memsBoost: (hz) => {
+if (hz >= CONFIG.MEMS.CUTOFF) return 1;
+const ratio = hz / CONFIG.MEMS.CUTOFF;
+return 1 + (CONFIG.MEMS.MAX_BOOST - 1) * (1 - ratio);
+},
+arrayMax: (arr) => {
+let max = -Infinity;
+for (let i = 0; i < arr.length; i++) {
+if (arr[i] > max) max = arr[i];
+}
+return max;
+}
+};
+const { nowMs, clamp, mean, std, rms, qualityColor, binToHz, hzToBin, memsBoost } = Utils;
+class CircularBuffer {
+constructor(maxSize) {
+this.data = new Float32Array(maxSize);
+this.maxSize = maxSize;
+this.head = 0;
+this.count = 0;
+}
+push(val) {
+this.data[this.head] = val;
+this.head = (this.head + 1) % this.maxSize;
+if (this.count < this.maxSize) this.count++;
+}
+get length() { return this.count; }
+at(i) {
+if (i < 0 || i >= this.count) return 0;
+const idx = (this.head - this.count + i + this.maxSize) % this.maxSize;
+return this.data[idx];
+}
+last(n) {
+const len = Math.min(n, this.count);
+const result = new Array(len);
+for (let i = 0; i < len; i++) {
+result[i] = this.at(this.count - len + i);
+}
+return result;
+}
+toArray() { return this.last(this.count); }
+clear() { this.head = 0; this.count = 0; }
+keepLast(n) {
+  // v7.0.132: retain last N samples instead of full clear
+  if (n <= 0 || this.count === 0) { this.clear(); return; }
+  const keep = Math.min(n, this.count);
+  const saved = this.last(keep);
+  this.clear();
+  for (let i = 0; i < saved.length; i++) this.push(saved[i]);
+}
+}
+let envelope = new CircularBuffer(CONFIG.HR.ENV_MAX_SAMPLES)
+let envelopeRaw = new CircularBuffer(CONFIG.HR.ENV_MAX_SAMPLES);  // v7.0.103: raw time-domain envelope for env-autocorr path
+let hrSeeded = false;         // v7.0.103: true once first valid BPM locked
+// v7.0.105: instrumentation
+let calAbortReason = '-';
+let preCalExitReason = '-';
+let lastTransitionReason = '-';
+let calEnteredAt = 0;
+let waitingFailCounts = { contact: 0, signal: 0, motion: 0, artifact: 0 };
+let lastRawPeak = 0;          // v7.0.103: telemetry
+let lastEnvPeak = 0;          // v7.0.103: telemetry
+let lastSelectedSource = '--'; // v7.0.103: telemetry;
+let preCalSeries = new CircularBuffer(CONFIG.HR.ENV_MAX_SAMPLES); // v7.0.42: pre-cal heart energy series for periodicity
+function buildBinHzCache() {
+const binCount = CONFIG.DSP.FFT_SIZE / 2;
+cachedBinHz = new Float32Array(binCount);
+for (let i = 0; i < binCount; i++) {
+cachedBinHz[i] = i * sampleRate / CONFIG.DSP.FFT_SIZE;
+}
+}
+// ============================================================================
+// NOISE REDUCTION
+// ============================================================================
+function initDenoiser(fftLen) {
+noiseFloor = new Float32Array(fftLen).fill(CONFIG.NOISE.FLOOR_MIN);
+}
+function resetDenoiser() {
+if (noiseFloor) noiseFloor.fill(CONFIG.NOISE.FLOOR_MIN);
+}
+function updateNoiseFloor(spectrum, alphaOverride) {
+if (!noiseFloor) initDenoiser(spectrum.length);
+const alpha = alphaOverride !== undefined ? alphaOverride : CONFIG.NOISE.ALPHA;
+const oneMinusAlpha = 1 - alpha;
+const floorMin = CONFIG.NOISE.FLOOR_MIN;
+for (let i = 0, len = spectrum.length; i < len; i++) {
+const val = spectrum[i] / 255;
+noiseFloor[i] = alpha * noiseFloor[i] + oneMinusAlpha * val;
+if (noiseFloor[i] < floorMin) noiseFloor[i] = floorMin;
+}
+}
+function subtractNoise(spectrum) {
+if (!reusableDenoiseBuffer || reusableDenoiseBuffer.length !== spectrum.length) {
+reusableDenoiseBuffer = new Float32Array(spectrum.length);
+}
+const { SUBTRACTION_GAIN, RESIDUAL_FLOOR, PROTECT_LOW_HZ, PROTECT_MID_HZ, AGGRESSIVE_HZ } = CONFIG.NOISE;
+const floorMin = CONFIG.NOISE.FLOOR_MIN;
+for (let i = 0, len = spectrum.length; i < len; i++) {
+const val = spectrum[i] / 255;
+const noise = noiseFloor ? noiseFloor[i] : floorMin;
+const hz = cachedBinHz ? cachedBinHz[i] : (i * sampleRate / CONFIG.DSP.FFT_SIZE);
+let factor = SUBTRACTION_GAIN;
+if (hz < PROTECT_LOW_HZ) {
+factor *= 0.3;
+} else if (hz < PROTECT_MID_HZ) {
+factor *= 0.6;
+} else if (hz > AGGRESSIVE_HZ) {
+factor *= 1.5;
+}
+reusableDenoiseBuffer[i] = Math.max(val - noise * factor, RESIDUAL_FLOOR * val);
+}
+return reusableDenoiseBuffer;
+}
+function bandEnergy(fftData, hzLo, hzHi) {
+if (!sampleRate) return 0;
+const lo = hzToBin(hzLo);
+const hi = hzToBin(hzHi);
+let e = 0, c = 0;
+for (let i = lo; i <= hi && i < fftData.length; i++) {
+e += fftData[i];
+c++;
+}
+return c > 0 ? (e / c) : 0;
+}
+// ============================================================================
+// CONTACT DETECTION — v7.0.42 Tissue/Air Model
+// ============================================================================
+function analyzeContact(fftData) {
+if (!sampleRate) return 0;
+const now = nowMs();
+// v7.0.57: Anti-transient freeze REMOVED from analyzeContact
+// Reason: lfDelta and artifactBurstUntil update every frame on chest contact
+// (heartbeat creates periodic LF delta > 30), causing permanent freeze.
+// Knock/tap protection is now handled by gate pipeline (impulse reject).
+
+// v7.0.57: Strategy E — Dual-phase contact detection
+// Phase 1 (ENTRY): ratio-based — body(80-220Hz) must dominate noise(350-1200Hz)
+//   On chest: body >> noise (chest wall = LF filter) → ratio 2-10+
+//   In hand + noise: body ≈ noise (broadband) → ratio 0.5-1.5
+//   Voice: noise >> body → ratio < 0.5
+// Phase 2 (QUALITY): baseline-adaptive — excess over learned background
+//   Gives accurate contact level after entry is confirmed
+const bodyBand = bandEnergy(fftData, 80, 220);
+const lowBand = bandEnergy(fftData, 20, 70);
+const noiseBand = bandEnergy(fftData, 350, 1200);
+const voiceBandRaw = bandEnergy(fftData, 300, 3000);
+const totalEnergy = bodyBand + lowBand + noiseBand;
+
+// Always store for debug — tE=bodyBand, aE=noiseBand, T/A=ratio
+// Ratio: body vs noise only (voice handled separately by voice suppression)
+// v7.0.81: noise floor +15 prevents ratio inflation in silent room
+const noiseMixForRatio = noiseBand + 0.1 * lowBand + 15;
+const bodyRatio = bodyBand / noiseMixForRatio;
+lastTissueEnergy = bodyBand;
+lastAirEnergy = noiseBand;
+lastTissueRatio = Math.round(bodyRatio * 10) / 10;
+
+if (totalEnergy < CONFIG.CONTACT.MIN_TOTAL_ENERGY) return 0;
+
+// === PHASE 1: Ratio gate (primary discriminator) ===
+// This is the core filter: body must dominate noise spectrum
+// Chest wall attenuates >200Hz by 6-20dB → ratio 2-10+
+// Broadband noise (hand, ambient) → ratio 0.5-1.5
+// v7.0.81: Path E — Erb's sustained signal bypass
+const isWeakPoint = (currentPoint === 'erb');
+const hasSustainedSignal = bodyBand > 40 && totalEnergy > 3;
+sustainedSignalFrames = hasSustainedSignal
+  ? Math.min(60, sustainedSignalFrames + 2)
+  : Math.max(0, sustainedSignalFrames - 1);
+const sustainedSignalReady = sustainedSignalFrames >= 40;
+
+if (bodyRatio < CONFIG.CONTACT.BODY_RATIO_MIN) {
+  if (isWeakPoint && sustainedSignalReady) {
+    const s = voiceBandRaw > bodyBand * 1.4 ? 17 : 50;  // v7.0.130: was 35 → 50, above LIVE_MIN=35
+    return clamp(s, 0, 100);
+  }
+  return 0;
+}
+
+// Ratio-based score: maps ratio 1.5-8 → score 0-100
+// ratio=2→score≈30, ratio=3→score≈50, ratio=5→score≈75, ratio=8→score≈90
+let score = (bodyRatio - 1.0) * CONFIG.CONTACT.RATIO_SCORE_GAIN;
+
+// Voice suppression: if voice band strongly dominates body band
+if (voiceBandRaw > bodyBand * 1.4) score *= 0.5;
+
+// === PHASE 2: Baseline-adaptive refinement ===
+// Learns background in NO_CONTACT, refines score when baseline available
+if ((appState === 'WAITING' || appState === 'NO_CONTACT') && contactLevel < 10) {
+const a = CONFIG.CONTACT.BASE_ALPHA;
+if (contactBaseCount === 0) {
+contactBaseBody = bodyBand;
+contactBaseNoise = noiseBand;
+} else {
+contactBaseBody = contactBaseBody * a + bodyBand * (1 - a);
+contactBaseNoise = contactBaseNoise * a + noiseBand * (1 - a);
+}
+contactBaseCount = Math.min(1000000, contactBaseCount + 1);
+}
+
+// If baseline learned: boost score when body exceeds baseline
+if (contactBaseCount > 20) {
+const bodyExcess = Math.max(0, bodyBand - contactBaseBody * 1.05);
+const excessBonus = bodyExcess * 2.0;  // bonus points for exceeding baseline
+score = score + excessBonus;
+}
+
+return clamp(score, 0, 100);
+}
+function updateContactIndicator(rawLevel) {
+currentContactRaw = rawLevel;
+contactSmooth += (rawLevel - contactSmooth) * CONFIG.CONTACT.SMOOTH_FACTOR;
+contactLevel = contactSmooth;
+
+// v7.0.42: Hysteresis state machine for confirmedContact
+const now = nowMs();
+if (!confirmedContact) {
+// Trying to enter: contactSmooth must be >= ENTER_THRESHOLD for ENTER_HOLD_MS
+if (contactSmooth >= CONFIG.CONTACT.ENTER_THRESHOLD) {
+if (contactEnterSince === 0) contactEnterSince = now;
+if ((now - contactEnterSince) >= CONFIG.CONTACT.ENTER_HOLD_MS) {
+confirmedContact = true;
+contactExitSince = 0;
+}
+} else {
+contactEnterSince = 0;
+}
+} else {
+// Trying to exit: contactSmooth must be < EXIT_THRESHOLD for EXIT_HOLD_MS
+if (contactSmooth < CONFIG.CONTACT.EXIT_THRESHOLD) {
+if (contactExitSince === 0) contactExitSince = now;
+if ((now - contactExitSince) >= CONFIG.CONTACT.EXIT_HOLD_MS) {
+confirmedContact = false;
+contactEnterSince = 0;
+}
+} else {
+contactExitSince = 0;
+}
+}
+
+let levelText, levelClass, barColor;
+if (contactLevel < 30) {
+levelText = 'Weak'; levelClass = 'weak'; barColor = '#f44336';
+} else if (contactLevel < 60) {
+levelText = 'Moderate'; levelClass = 'moderate'; barColor = '#ff9800';
+} else if (contactLevel < 85) {
+levelText = 'Good'; levelClass = 'good'; barColor = '#8bc34a';
+} else {
+levelText = 'Excellent'; levelClass = 'excellent'; barColor = '#4caf50';
+}
+if (dom.contactLevel) {
+dom.contactLevel.textContent = levelText;
+dom.contactLevel.className = `contact-level ${levelClass}`;
+}
+if (dom.contactBarFill) {
+dom.contactBarFill.style.width = `${contactLevel}%`;
+dom.contactBarFill.style.background = barColor;
+}
+updateContactRing();
+}
+function resetContactIndicator() {
+contactLevel = 0;
+contactSmooth = 0;
+currentContactRaw = 0;
+// v7.0.57: reset gate pipeline vars
+prevGateContact = 0;
+impulseContactHoldUntil = 0;
+// v7.0.57: reset baseline (re-learn in new NO_CONTACT)
+contactBaseCount = 0;
+contactBaseBody = 0;
+contactBaseNoise = 0;
+if (dom.contactLevel) {
+dom.contactLevel.textContent = '--';
+dom.contactLevel.className = 'contact-level';
+}
+if (dom.contactBarFill) {
+dom.contactBarFill.style.width = '0%';
+}
+}
+// ============================================================================
+// MOTION & TILT DETECTION
+// ============================================================================
+function updateMotionHint() {
+if (!dom.motionHint || !dom.motionHintText) return;
+if (!isRunning || !isCalibrated) {
+dom.motionHint.classList.remove('active');
+motion.currentHint = null;
+lastHintShown = null;
+return;
+}
+let hint = null;
+if (motion.isShaking) hint = '🤲 Hold steady';
+else if (motion.isTilted) hint = '📐 Level phone';
+const now = nowMs();
+if (hint !== lastHintShown) {
+if (hintChangeAt === 0 || (now - hintChangeAt) < CONFIG.UI.HINT_HYSTERESIS_MS) {
+if (hintChangeAt === 0) hintChangeAt = now;
+hint = lastHintShown;
+} else {
+lastHintShown = hint;
+hintChangeAt = 0;
+}
+} else {
+hintChangeAt = 0;
+}
+if (hint && hint !== motion.currentHint) {
+dom.motionHintText.textContent = hint;
+dom.motionHint.classList.add('active');
+motion.currentHint = hint;
+} else if (!hint) {
+dom.motionHint.classList.remove('active');
+motion.currentHint = null;
+}
+}
+async function requestMotionPermissions() {
+if (typeof DeviceMotionEvent !== 'undefined' &&
+typeof DeviceMotionEvent.requestPermission === 'function') {
+try { await DeviceMotionEvent.requestPermission(); }
+catch (err) { console.warn('Motion permission denied:', err); }
+}
+if (typeof DeviceOrientationEvent !== 'undefined' &&
+typeof DeviceOrientationEvent.requestPermission === 'function') {
+try { await DeviceOrientationEvent.requestPermission(); }
+catch (err) { console.warn('Orientation permission denied:', err); }
+}
+}
+function addMotionListeners() {
+if (typeof DeviceMotionEvent !== 'undefined') {
+window.addEventListener('devicemotion', onMotion);
+}
+if (typeof DeviceOrientationEvent !== 'undefined') {
+window.addEventListener('deviceorientation', onOrientation);
+}
+}
+function removeMotionListeners() {
+window.removeEventListener('devicemotion', onMotion);
+window.removeEventListener('deviceorientation', onOrientation);
+}
+function onMotion(e) {
+if (!isRunning) return;
+const a = e.accelerationIncludingGravity || e.acceleration;
+if (!a) return;
+// v7.0.15: NaN guard — some Android devices return NaN
+const ax = a.x || 0, ay = a.y || 0, az = a.z || 0;
+if (isNaN(ax) || isNaN(ay) || isNaN(az)) return;
+const total = Math.sqrt(ax ** 2 + ay ** 2 + az ** 2);
+if (motion.baseTotal === null) {
+motion.baseTotal = total;
+motion.smoothAccel = 0;
+return;
+}
+const diff = Math.abs(total - motion.baseTotal);
+// v7.0.42: Update baseTotal with slow EMA to track gravity drift / sensor noise
+// Without this, baseTotal freezes at first reading and any sensor noise = "motion"
+motion.baseTotal = motion.baseTotal * 0.995 + total * 0.005;
+motion.smoothAccel = motion.smoothAccel * CONFIG.MOTION.SMOOTH_ALPHA + diff * CONFIG.MOTION.SMOOTH_BETA;
+motion.accelBuffer.push(diff);
+while (motion.accelBuffer.length > CONFIG.MOTION.ACCEL_BUFFER_MAX) motion.accelBuffer.shift();
+motion.isShaking = rms(motion.accelBuffer) > CONFIG.MOTION.SHAKE_RMS_TH;
+const moving = motion.smoothAccel > CONFIG.MOTION.THRESHOLD;
+if (moving || motion.isShaking) {
+stability.isStable = false;
+stability.isSoftStable = false;
+} else if (!motion.isTilted) {
+stability.isStable = true;
+stability.isSoftStable = true;
+}
+setStabilityUI();
+updateMotionHint();
+}
+function onOrientation(e) {
+if (!isRunning) return;
+const b = e.beta || 0, g = e.gamma || 0;
+orient.currentBeta = b;
+orient.currentGamma = g;
+if (orient.baseline === null) {
+orient.baseline = { beta: b, gamma: g };
+return;
+}
+const maxTilt = Math.max(Math.abs(b - orient.baseline.beta), Math.abs(g - orient.baseline.gamma));
+motion.isTilted = maxTilt > CONFIG.TILT.ANGLE_MAX;
+if (motion.isTilted) stability.isSoftStable = false;
+setStabilityUI();
+updateMotionHint();
+}
+function setStabilityUI() {
+if (!dom.stabilityDot) return;
+if (!isRunning || !isCalibrated) {
+dom.stabilityDot.style.background = '#bbb';
+dom.stabilityText.textContent = '--';
+dom.unstableBadge.classList.remove('active');
+dom.signalMeter.classList.remove('unstable');
+return;
+}
+if (stability.isStable && stability.isSoftStable) {
+dom.stabilityDot.style.background = '#4caf50';
+dom.stabilityText.textContent = 'Stable';
+dom.unstableBadge.classList.remove('active');
+dom.signalMeter.classList.remove('unstable');
+} else {
+dom.stabilityDot.style.background = '#ff9800';
+dom.stabilityText.textContent = 'Moving';
+dom.unstableBadge.classList.add('active');
+dom.signalMeter.classList.add('unstable');
+}
+}
+// ============================================================================
+// STATE MACHINE
+// ============================================================================
+function updateStableSince(condition, since, now) {
+if (condition) return since || now;
+return 0;
+}
+function stableFor(since, now) {
+return since > 0 ? (now - since) : 0;
+}
+function statusLine(reason) {
+const c = Math.round(contactLevel);
+const cr = Math.round(currentContactRaw);
+const h = Math.round(heartEnergy * 10) / 10;
+const v = Math.round(voiceEnergy * 10) / 10;
+const hdrPct = Math.round((lastHDR || 0) * 100);
+const rms = Math.round(lastSignalRMS * 1000);
+const tr = Math.round(lastTissueRatio * 10) / 10;
+const cc = confirmedContact ? 'CC' : 'nc';
+const wt = waitingStartAt ? Math.round((nowMs() - waitingStartAt) / 1000) : 0;
+// v7.0.57: debug — show raw tissue/air energy to diagnose AIR_MIN_ABS threshold
+const te = Math.round((lastTissueEnergy || 0) * 10) / 10;
+const ae = Math.round((lastAirEnergy || 0) * 10) / 10;
+return `${appState}|C:${c}(${cr})${cc}|T/A:${tr}|tE:${te}aE:${ae}|H:${h}V:${v}|rms:${rms}|${reason}`;
+}
+function robustBaselineStats(values) {
+if (!values || !values.length) return { mean: 0, std: 1, p50: 0, p90: 0 };
+const sorted = values.slice().sort((a, b) => a - b);
+const n = sorted.length;
+const q = (p) => sorted[Math.min(n - 1, Math.max(0, Math.floor((n - 1) * p)))];
+const p10 = q(0.10);
+const p90 = q(0.90);
+const p50 = q(0.50);
+let sum = 0, count = 0;
+for (let i = 0; i < n; i++) {
+const v = sorted[i];
+if (v >= p10 && v <= p90) {
+sum += v;
+count++;
+}
+}
+const meanVal = count > 0 ? sum / count : p50;
+const deviations = sorted.map((v) => Math.abs(v - p50)).sort((a, b) => a - b);
+const mad = deviations[Math.floor((deviations.length - 1) * 0.5)] || 0;
+const robustStd = Math.max(1e-3, 1.4826 * mad);
+return { mean: meanVal, std: robustStd, p50, p90 };
+}
+function checkWaitingConditions() {
+const now = nowMs();
+// v7.0.42: confirmedContact is the primary gate (hysteresis-based)
+const contactOK = confirmedContact;
+const heartMin = CONFIG.CALIBRATION.MIN_BASELINE_ENERGY * CONFIG.CALIBRATION.HEART_CONSISTENCY_FACTOR;
+const isWeakPointCAL = (currentPoint === 'erb');
+const signalOK = isWeakPointCAL
+  ? (confirmedContact || heartEnergy > heartMin || !isSilent)
+  : (heartEnergy > heartMin || !isSilent);
+const motionOK = stability.isStable && !motion.isShaking;
+const tiltOK = !motion.isTilted;
+const totalEnergy = heartEnergy + voiceEnergy + 0.01;
+const heartDominanceRatio = heartEnergy / totalEnergy;
+lastHDR = heartDominanceRatio;
+const hdrOK = voiceEnergy < 2.0 || heartDominanceRatio > CONFIG.VOICE.HDR_MIN_WAIT_HINT;
+const voiceDominantNow = voiceEnergy > 3.0 && voiceEnergy > (heartEnergy * 1.15);
+waitVoiceDominantFrames = voiceDominantNow ? Math.min(200, waitVoiceDominantFrames + 1) : Math.max(0, waitVoiceDominantFrames - 1);
+waitLowHdrFrames = !hdrOK ? Math.min(200, waitLowHdrFrames + 1) : Math.max(0, waitLowHdrFrames - 1);
+const voiceGateOK = waitVoiceDominantFrames < CONFIG.CALIBRATION.VOICE_BLOCK_FRAMES;
+const hdrGateOK = waitLowHdrFrames < CONFIG.CALIBRATION.HDR_BLOCK_FRAMES;
+// v7.0.106: artifactGateOK → soft penalty only, does NOT block CAL entry
+// Biological signals (breathing, skin friction, heart sounds) trigger artifact detector
+// Artifact should reduce confidence/quality but never block pipeline
+const artifactGateOK = (now - lastArtifactAt) > CONFIG.ARTIFACT.CAL_BLOCK_MS;
+// v7.0.42: Voice delay — after voice ends, wait 2s before allowing CAL
+const voiceRecentlyActive = voiceDominantNow || waitVoiceDominantFrames > 2;
+if (voiceRecentlyActive) {
+calVoiceDelayUntil = now + 2000;
+}
+const voiceDelayClear = now > (calVoiceDelayUntil || 0);
+// v7.0.106: HARD gates — contact + signal + voice delay only
+// artifact removed from hard gate (was blocking CAL at Erb's point)
+const allConditionsOK = contactOK && signalOK && voiceDelayClear;
+return { allConditionsOK, contactOK, signalOK, motionOK, tiltOK, hdrOK, voiceGateOK, hdrGateOK, artifactGateOK };
+}
+function updateWaitingUI(contactOK, signalOK, motionOK, tiltOK, hdrOK, voiceGateOK, hdrGateOK, artifactGateOK, stableStart) {
+const cc = confirmedContact ? '✓' : '✗';
+const checks = [
+cc + 'C',
+signalOK ? '✓S' : '✗S',
+motionOK ? '✓M' : '⚠M',   // v7.0.42: ⚠ = penalty, not block
+tiltOK ? '✓T' : '⚠T',
+hdrOK ? '✓H' : '⚠H'
+];
+dom.progressText.textContent = confirmedContact ? '📱 Preparing calibration...' : '📱 Place phone on auscultation point';
+dom.progressContainer.classList.add('show');
+if (stableStart > 0) {
+const elapsed = nowMs() - stableStart;
+const stableMs = CONFIG.CALIBRATION.STABLE_WINDOW_MS;
+const percent = Math.min((elapsed / stableMs) * 100, 100);
+dom.progressFill.style.width = percent + '%';
+dom.statusText.textContent = statusLine(`ready in ${Math.ceil((stableMs - elapsed) / 1000)}s`);
+} else {
+dom.progressFill.style.width = '0%';
+const voiceDelayClear = nowMs() > (calVoiceDelayUntil || 0);
+const failReason = !contactOK ? 'no-contact' : !signalOK ? 'signal' : !artifactGateOK ? 'artifact' : !voiceDelayClear ? 'voice-delay' : 'stabilizing';
+dom.statusText.textContent = `${statusLine(failReason)} | ${checks.join(' ')}`;
+}
+}
+function updateWaitingState() {
+const now = nowMs();
+// v7.0.42: WAITING timeout — soft retry after 20s to prevent deadlock
+if (!waitingStartAt) waitingStartAt = now;
+if ((now - waitingStartAt) > CONFIG.CALIBRATION.WAITING_TIMEOUT_MS) {
+// Soft retry: reset accumulators but stay in WAITING
+waitingConditionsMet = 0;
+waitVoiceDominantFrames = 0;
+waitLowHdrFrames = 0;
+waitPeriodicityScore = 0;
+contactStableSince = 0;
+waitingStartAt = now;
+lastTransitionReason = 'WAITING→TIMEOUT'; dom.statusText.textContent = statusLine('timeout → retry'); // v7.0.105
+return;
+}
+const { allConditionsOK, contactOK, signalOK, motionOK, tiltOK, hdrOK, voiceGateOK, hdrGateOK, artifactGateOK, heartConsistencyOK, periodicityGateOK } = checkWaitingConditions();
+if (allConditionsOK) {
+if (waitingConditionsMet === 0) {
+waitingConditionsMet = nowMs();
+} else {
+const stableTime = nowMs() - waitingConditionsMet;
+if (stableTime >= CONFIG.CALIBRATION.STABLE_WINDOW_MS) {
+appState = 'CALIBRATION'; calEnteredAt = nowMs(); calStartAt = nowMs(); calAbortReason = '-'; preCalExitReason = '-'; lastTransitionReason = 'WAITING→CAL'; waitingFailCounts = {contact:0,signal:0,motion:0,artifact:0}; // v7.0.105
+waitingStartAt = 0;   // v7.0.42: reset waiting timer
+calFrames = [];
+contactCalFrames = [];
+waitingConditionsMet = 0;
+dom.statusText.textContent = '🔧 Calibrating...';
+return;
+}
+}
+} else {
+waitingConditionsMet = 0;
+}
+updateWaitingUI(contactOK, signalOK, motionOK, tiltOK, hdrOK, voiceGateOK, hdrGateOK, artifactGateOK, waitingConditionsMet);
+}
+function updateCalibrationState() {
+if (calStartAt && (nowMs() - calStartAt) > CONFIG.CALIBRATION.TIMEOUT_MS) {
+calAbortReason = 'cal_timeout'; preCalExitReason = 'cal_timeout'; lastTransitionReason = 'CAL→WAITING(cal_timeout)'; // v7.0.105
+appState = 'WAITING';
+calFrames = [];
+contactCalFrames = [];
+waitingConditionsMet = 0;
+calBadFrames = 0; calBadStartAt = 0;
+calStartAt = 0;
+dom.statusText.textContent = '⚠️ Calibration timeout → retry';
+dom.progressContainer.classList.add('show');
+return;
+}
+// v7.0.42: Use gate check during calibration
+const { allConditionsOK, contactOK, signalOK, motionOK, tiltOK, voiceGateOK, hdrGateOK, artifactGateOK } = checkWaitingConditions();
+if (!allConditionsOK) {
+// v7.0.42: Don't reset accumulated calFrames on brief failures
+// Only skip this frame. Reset only on sustained failure (timer-based)
+if (calBadFrames === 0) calBadStartAt = nowMs();
+calBadFrames++;
+const badDuration = nowMs() - calBadStartAt;
+const failedCond = !contactOK ? 'Contact' : !signalOK ? 'Signal' : !motionOK ? 'Motion' : !tiltOK ? 'Tilt' : !voiceGateOK ? 'Voice' : !hdrGateOK ? 'HDR' : 'Artifact';
+dom.statusText.textContent = statusLine(`${failedCond.toLowerCase()} unstable (${Math.round(badDuration/1000)}s)`);
+// v7.0.42: Only full reset after 3 seconds of continuous bad frames
+if (badDuration > 3000) {
+calAbortReason = 'cal_bad_streak'; preCalExitReason = 'cal_bad_streak'; lastTransitionReason = 'CAL→WAITING(cal_bad_streak)'; // v7.0.105
+appState = 'WAITING';
+calFrames = [];
+contactCalFrames = [];
+waitingConditionsMet = 0;
+calBadFrames = 0; calBadStartAt = 0;
+calStartAt = 0;
+dom.progressContainer.classList.add('show');
+dom.statusText.textContent = statusLine(`${failedCond.toLowerCase()} lost → restarting`);
+return;
+}
+return;
+}
+calBadFrames = 0; calBadStartAt = 0;
+// v7.0.42: Reject voice-contaminated frames from calibration baseline
+const calTotalEnergy = heartEnergy + voiceEnergy + 0.01;
+const calHdr = heartEnergy / calTotalEnergy;
+const calVoiceContaminated = voiceEnergy > (heartEnergy * 1.15) || calHdr < CONFIG.VOICE.HDR_MIN_WAIT_HINT;
+if (calVoiceContaminated) {
+dom.statusText.textContent = statusLine('voice frame rejected');
+return;
+}
+calFrames.push(heartEnergy);
+contactCalFrames.push(currentContactRaw);
+const progress = (calFrames.length / CONFIG.CALIBRATION.FRAMES_REQUIRED) * 100;
+dom.progressFill.style.width = progress + '%';
+dom.progressText.textContent = `Calibrating... ${Math.round(progress)}%`;
+dom.statusText.textContent = statusLine(`cal ${Math.round(progress)}%`);
+if (calFrames.length >= CONFIG.CALIBRATION.FRAMES_REQUIRED) {
+const stats = robustBaselineStats(calFrames);
+if (stats.mean < CONFIG.CALIBRATION.MIN_BASELINE_ENERGY) {
+console.warn('[CAL] baseline weak', { calMean: stats.mean, p50: stats.p50, p90: stats.p90, min: CONFIG.CALIBRATION.MIN_BASELINE_ENERGY });
+calAbortReason = 'cal_weak_signal'; preCalExitReason = 'cal_weak_signal'; lastTransitionReason = 'CAL→WAITING(cal_weak_signal)'; // v7.0.105
+appState = 'WAITING';
+calFrames = [];
+contactCalFrames = [];
+waitingConditionsMet = 0;
+calBadFrames = 0; calBadStartAt = 0;
+calStartAt = 0;
+dom.statusText.textContent = '⚠️ Signal too weak → retry';
+dom.progressContainer.classList.add('show');
+return;
+}
+baseline.mean = stats.mean;
+baseline.std = stats.std;
+appState = 'LIVE'; preCalExitReason = 'ok'; lastTransitionReason = 'CAL→LIVE'; // v7.0.105
+isCalibrated = true;
+// v7.0.57: Save orientation baseline at calibration position
+// so angle hints show deviation from the position that produced good calibration
+orient.baseline = { beta: orient.currentBeta, gamma: orient.currentGamma };
+calBadFrames = 0; calBadStartAt = 0;
+calStartAt = 0;
+dom.progressContainer.classList.remove('show');
+dom.statusText.textContent = statusLine('analyzing');
+dom.recalBtn.style.display = 'block';
+// v7.0.155: show RECORD after calibration
+const _recBtnShow = document.getElementById('recordBtn');
+if (_recBtnShow) _recBtnShow.style.display = 'inline-flex';
+lastGoodContactAt = nowMs();
+silenceDurationMs = 0;
+silenceStartAt = 0;
+contactLostAt = 0;
+continuousMotionStart = 0;
+motionStartAt = 0;
+voiceDominantFrames = 0;
+lowHdrFrames = 0;
+waitVoiceDominantFrames = 0;
+waitLowHdrFrames = 0;
+}
+}
+function triggerRecalibration(reason) {
+lastTransitionReason = 'LIVE→NO_CONTACT(recal:' + (reason||'?') + ')'; calAbortReason = reason || '-'; // v7.0.105
+// v7.0.128: preserve BPM seed across brief recal to survive screenshot/micro-movement
+const recalAt = nowMs();
+const hrSeedPreserve = hrSeeded && hrConfirmed && heartRate > 0;
+const hrRatePreserve = heartRate;
+appState = 'NO_CONTACT';  // v7.0.42: go to NO_CONTACT, not WAITING
+isCalibrated = false;
+confirmedContact = false;  // v7.0.42: reset hysteresis
+contactEnterSince = 0;
+contactExitSince = 0;
+noContactSince = nowMs();  // v7.0.42: start no-contact timer
+calFrames = [];
+contactCalFrames = [];
+waitingConditionsMet = 0;
+calBadFrames = 0; calBadStartAt = 0;
+calStartAt = 0;
+signalStrength = 0;
+heartRate = 0;
+hrConfirmed = false;
+rr = [];
+envelope.clear();
+// v7.0.132: for Erb's Point keep last 30 envelopeRaw samples to avoid rP=0 after recal
+// Other points clear fully (baseline shift risk)
+if (currentPoint === 'erb') {
+  envelopeRaw.keepLast(30);
+} else {
+  envelopeRaw.clear();  // v7.0.122: reset env buffer on recal/point-change
+}
+preCalSeries.clear();   // v7.0.42
+silenceStartAt = 0;
+motionStartAt = 0;
+voiceDominantFrames = 0;
+lowHdrFrames = 0;
+waitVoiceDominantFrames = 0;   // v7.0.42
+waitLowHdrFrames = 0;         // v7.0.42
+waitPeriodicityScore = 0;     // v7.0.42
+lastArtifactAt = 0;           // v7.0.42
+lastLfBandEnergy = 0;         // v7.0.42
+periodicityScore = 0;
+bestLagBpm = 0;
+lastRawPeak = 0; lastEnvPeak = 0; lastSelectedSource = '--';  // v7.0.121: reset stale telemetry
+hrGateReason = reason.toLowerCase();
+hrLastValidBpm = 0; hrLastValidAt = 0;  // v7.0.103
+erbBpmBuffer = [];  // v7.0.139
+hrSeeded = false;  // v7.0.103
+contactStableSince = 0;
+motionStableSince = 0;
+signalStableSince = 0;
+artifactBurstUntil = 0;
+// v7.0.128: restore seed if BPM was valid before recal (brief contact loss)
+if (hrSeedPreserve) {
+  hrSeeded = true;
+  heartRate = hrRatePreserve;
+  hrConfirmed = true;
+}
+dom.statusText.textContent = statusLine(`${reason.toLowerCase()} → recal`);
+dom.progressContainer.classList.add('show');
+dom.recalBtn.style.display = 'none';
+  const _rB = document.getElementById('recordBtn'); if(_rB) { _rB.style.display='none'; if(pcgRecording) pcgStopRecording(); }
+}
+function updateLiveState(deltaMs) {
+const now = nowMs();
+const liveMin = (currentPoint === 'erb') ? CONFIG.CONTACT.LIVE_MIN_ERB : CONFIG.CONTACT.LIVE_MIN; // v7.0.130
+if (contactLevel < liveMin) {
+if (contactLostAt === 0) contactLostAt = now;
+if ((now - contactLostAt) >= CONFIG.CONTACT.LOST_DEBOUNCE_MS) {
+triggerRecalibration('Contact lost');
+return;
+}
+} else {
+contactLostAt = 0;
+}
+if (isSilent) {
+if (silenceStartAt === 0) silenceStartAt = now;
+if ((now - silenceStartAt) >= CONFIG.SILENCE.DEBOUNCE_MS) silenceDurationMs += deltaMs;
+if (silenceDurationMs >= CONFIG.SILENCE.DURATION_MAX_MS) {
+triggerRecalibration('Silence > 3s');
+return;
+}
+} else {
+silenceDurationMs = 0;
+silenceStartAt = 0;
+}
+if (!stability.isStable || motion.isShaking) {
+if (motionStartAt === 0) motionStartAt = now;
+if ((now - motionStartAt) >= CONFIG.RECALIBRATION.DEBOUNCE_MS) {
+if (continuousMotionStart === 0) continuousMotionStart = now;
+if ((now - continuousMotionStart) >= CONFIG.RECALIBRATION.MOTION_TIMEOUT_MS) {
+triggerRecalibration('Excessive motion');
+return;
+}
+}
+} else {
+continuousMotionStart = 0;
+motionStartAt = 0;
+}
+lastGoodContactAt = now;
+const artifactActive = now < artifactBurstUntil;
+const frozen = updateMotionMask() || artifactActive;
+if (isSilent) {
+signalStrength += (0 - signalStrength) * CONFIG.QUALITY.SMOOTH_FACTOR * 2;
+currentSNR = CONFIG.QUALITY.SNR_FLOOR;
+updateQualityHistory(0);
+dom.statusText.textContent = statusLine('silent');
+return;
+}
+if (frozen) {
+updateQualityHistory(Math.round(signalStrength));
+dom.statusText.textContent = statusLine(artifactActive ? 'artifact freeze' : 'motion freeze');
+// v7.0.134: if already seeded, continue BPM calculation despite freeze
+if (!hrSeeded) return;
+motionFrozen = true;
+}
+// v7.0.85: Erb's point — inflate effective std to reduce quality fluctuation
+// Problem: baseline.std fixed at CAL, pressure changes in LIVE → H varies 63-81 → quality 15→66
+// Fix: multiply std by 3 for Erb's → normalized range shrinks → quality stays ~40-60
+// Tradeoff: less sensitive to real signal improvements, but stable display
+const isErbsQuality = (currentPoint === 'erb');
+const effectiveStd = isErbsQuality ? (baseline.std * 1.5 + 0.01) : (baseline.std + 0.01);
+const normalized = (heartEnergy - baseline.mean) / effectiveStd;
+const rawQuality = 50 + normalized * 15;
+const snrLinear = heartEnergy / (baseline.mean + 0.001);
+currentSNR = clamp(10 * Math.log10(snrLinear), CONFIG.QUALITY.SNR_FLOOR, CONFIG.QUALITY.SNR_CEILING);
+// v7.0.83: Erb's point has anatomically lower SNR — lower bonus threshold from +3 to -2 dB
+const isErbsPoint = (currentPoint === 'erb');
+const snrBonusThreshold = isErbsPoint ? -2 : 3;
+const snrBonus = clamp((currentSNR - snrBonusThreshold) * 3, 0, 20);
+let qualityWithSNR = rawQuality + snrBonus;
+if (contactLevel < ((currentPoint === 'erb') ? CONFIG.CONTACT.LIVE_MIN_ERB : CONFIG.CONTACT.LIVE_MIN)) { // v7.0.130
+qualityWithSNR *= 0.3;
+} else {
+// v7.0.83: Erb's point boost — anatomically weak signal, scale up contact multiplier
+const contactScale = isErbsPoint
+? (0.7 + contactLevel / 180)
+: (0.5 + contactLevel / 200);
+qualityWithSNR *= contactScale;
+}
+let targetQuality = clamp(qualityWithSNR, 0, 100);
+const totalEnergy = heartEnergy + voiceEnergy + 0.01;
+const hdr = heartEnergy / totalEnergy;
+lastHDR = hdr;
+if (voiceEnergy > heartEnergy) {
+voiceDominantFrames = Math.min(200, voiceDominantFrames + 1);
+lastVoiceAt = now;
+} else {
+voiceDominantFrames = Math.max(0, voiceDominantFrames - 1);
+}
+if (hdr < CONFIG.VOICE.HDR_MIN_LIVE) {
+lowHdrFrames = Math.min(200, lowHdrFrames + 1);
+} else {
+lowHdrFrames = Math.max(0, lowHdrFrames - 1);
+}
+const voicePenalty = voiceDominantFrames >= CONFIG.QUALITY.VOICE_DOMINANT_FRAMES
+? CONFIG.QUALITY.VOICE_PENALTY_MIN
+: 1 - (voiceDominantFrames / CONFIG.QUALITY.VOICE_DOMINANT_FRAMES) * (1 - CONFIG.QUALITY.VOICE_PENALTY_MIN);
+const hdrPenalty = lowHdrFrames >= CONFIG.QUALITY.HDR_LOW_FRAMES
+? CONFIG.QUALITY.HDR_PENALTY_MIN
+: 1 - (lowHdrFrames / CONFIG.QUALITY.HDR_LOW_FRAMES) * (1 - CONFIG.QUALITY.HDR_PENALTY_MIN);
+targetQuality *= voicePenalty * hdrPenalty;
+signalStrength += (targetQuality - signalStrength) * CONFIG.QUALITY.SMOOTH_FACTOR;
+// v7.0.117: SQ rate limiter — prevent chaotic jumps (5→60→8 in same position)
+// max rise: +4 per frame, max fall: -3 per frame
+if (typeof signalStrengthPrev === 'undefined') signalStrengthPrev = signalStrength;
+signalStrength = clamp(signalStrength, signalStrengthPrev - 3, signalStrengthPrev + 4);
+signalStrengthPrev = signalStrength;
+// v7.0.42: Adaptive envelope scaling — use baseline for normalization (v7017 formula)
+const adaptiveEnvScale = Math.max(8, baseline.mean * 2.5);
+const envVal = clamp(heartEnergy / adaptiveEnvScale, 0, 1);
+envelope.push(envVal);
+// v7.0.103: envelopeRaw uses heartEnergy (heart-band filtered, already computed)
+// Bug 7.0.97: broadband RMS of 4096 samples → noise dominated → eP≈0.00
+// Fix: same spectral energy as main envelope, same normalization
+const adaptiveEnvScaleRaw = Math.max(8, baseline.mean * 2.5);
+envelopeRaw.push(clamp(heartEnergy / adaptiveEnvScaleRaw, 0, 1));
+updateQualityHistory(Math.round(signalStrength));
+// v7.0.103: telemetry — show raw/env peaks and selected source
+// v7.0.114: extended HR debug — ACF peaks, lag, BPM candidate, threshold, seed state
+// v7.0.123: added CC (confirmedContact) and state transition reason
+const hrThr = (currentPoint === 'erb') ? (hrSeeded ? 0.08 : 0.10) : (hrSeeded ? 0.27 : 0.12); // v7.0.140: erb seeded 0.06→0.08
+const lagSec = bestLagBpm > 0 ? (60 / bestLagBpm).toFixed(2) : '--';
+const ccFlag = confirmedContact ? 'CC' : 'nc';
+// v7.0.135: show hrGateReason explicitly so hr-jump is visible in diag
+const telem = `rP:${lastRawPeak.toFixed(2)} eP:${lastEnvPeak.toFixed(2)} src:${lastSelectedSource} thr:${hrThr.toFixed(2)} lag:${lagSec}s cand:${bestLagBpm||'--'} seed:${hrSeeded?1:0} gate:${hrGateReason||'?'} | ${lastTransitionReason} | calAbort:${calAbortReason}`;
+dom.statusText.textContent = statusLine((hrGateReason || 'analyzing') + ' ' + telem);
+}
+// ============================================================================
+// DSP PROCESSING
+// ============================================================================
+function processDSP() {
+if (!isRunning || !analyser) return;
+const now = nowMs();
+const deltaMs = lastProcessTime > 0 ? (now - lastProcessTime) : CONFIG.UI.UPDATE_MS;
+lastProcessTime = now;
+if (!reusableFftData) reusableFftData = new Uint8Array(analyser.frequencyBinCount);
+if (!reusableTimeDomain) reusableTimeDomain = new Float32Array(analyser.fftSize);
+analyser.getByteFrequencyData(reusableFftData);
+analyser.getFloatTimeDomainData(reusableTimeDomain);
+lastTimeDomain = reusableTimeDomain;
+const rawContact = analyzeContact(reusableFftData);
+
+// v7.0.57: Gate pipeline (from v7.0.52 audit)
+// Post-process rawContact before feeding to hysteresis
+const lfBandNow = bandEnergy(reusableFftData, 20, 120);
+const hfBandNow = bandEnergy(reusableFftData, 300, 2000);
+let gateContact = rawContact;
+
+// Gate 1: Airborne noise clamp — high HF/LF ratio + low LF = pure airborne noise
+const airRatioNow = hfBandNow / (lfBandNow + 1e-3);
+if (airRatioNow > CONFIG.CONTACT.AIR_RATIO_CLAMP && lfBandNow < CONFIG.CONTACT.LF_MECH_MIN) {
+gateContact = Math.min(gateContact, CONFIG.CONTACT.AIR_CLAMP_MAX);
+}
+
+// Gate 2: Impulse reject — sudden contact spike = knock/tap, not body contact
+// Only trigger on RISING edge (from low to high), not when sustained high
+const contactDeriv = gateContact - prevGateContact;  // signed: positive = rising
+if (contactDeriv >= CONFIG.CONTACT.IMPULSE_DERIV_TH && prevGateContact < 15) {
+// Sudden jump FROM near-zero — likely a knock/tap
+impulseContactHoldUntil = now + CONFIG.CONTACT.IMPULSE_HOLD_MS;
+}
+// Release impulse hold early if contact stays high (sustained = real contact)
+if (now < impulseContactHoldUntil) {
+if (rawContact > 30 && prevGateContact > 20) {
+// Contact is sustained, not a spike — release hold
+impulseContactHoldUntil = 0;
+} else {
+gateContact = Math.min(gateContact, CONFIG.CONTACT.FALSE_GREEN_MAX);
+}
+}
+prevGateContact = gateContact;
+
+updateContactIndicator(gateContact);
+// v7.0.42: LF band delta artifact detection (from v7017) — catches table knocks, impacts
+const lfDelta = Math.abs(lfBandNow - lastLfBandEnergy);
+if (lfDelta > CONFIG.ARTIFACT.LF_DELTA_TH) {
+lastArtifactAt = now;
+}
+lastLfBandEnergy = lfBandNow;
+let sum = 0, peakAbs = 0, clipCount = 0;
+for (let i = 0; i < reusableTimeDomain.length; i++) {
+const v = reusableTimeDomain[i];
+sum += v * v;
+const av = Math.abs(v);
+if (av > peakAbs) peakAbs = av;
+if (av >= CONFIG.ARTIFACT.CLIP_TH) clipCount++;
+}
+lastSignalRMS = Math.sqrt(sum / reusableTimeDomain.length);
+const hfStartBin = hzToBin(CONFIG.FREQ.HIGH_FREQ_GATE);
+let hfEnergy = 0;
+const hfCount = reusableFftData.length - hfStartBin;
+for (let i = hfStartBin; i < reusableFftData.length; i++) hfEnergy += reusableFftData[i];
+lastHfEnergy = hfCount > 0 ? (hfEnergy / hfCount / 255 * 100) : 0;
+isSilent = lastSignalRMS < CONFIG.SILENCE.RMS_THRESHOLD && lastHfEnergy < CONFIG.SILENCE.HF_THRESHOLD;
+const peakToRms = lastSignalRMS > 1e-6 ? peakAbs / lastSignalRMS : 0;
+if (peakToRms > CONFIG.ARTIFACT.PEAK_TO_RMS_TH || clipCount > CONFIG.ARTIFACT.CLIP_COUNT_TH) {
+artifactBurstUntil = now + CONFIG.ARTIFACT.FREEZE_MS;
+lastArtifactAt = now;
+transitionFreezeUntil = now + CONFIG.ARTIFACT.TRANSITION_FREEZE_MS;
+}
+// v7.0.57: Severe artifact detection (from v7.0.52)
+if (peakToRms > CONFIG.ARTIFACT.PEAK_TO_RMS_SEVERE_TH || clipCount > CONFIG.ARTIFACT.CLIP_COUNT_SEVERE_TH) {
+severeArtifactAt = now;
+}
+const cleanSpectrum = subtractNoise(reusableFftData);
+const loIdx = hzToBin(CONFIG.FREQ.HEART_LOW);
+const hiIdx = hzToBin(CONFIG.FREQ.HEART_HIGH);
+let heartEnergyLocal = 0, weightSum = 0;
+for (let i = loIdx; i <= hiIdx && i < cleanSpectrum.length; i++) {
+const hz = cachedBinHz ? cachedBinHz[i] : (i * sampleRate / CONFIG.DSP.FFT_SIZE);
+const boost = memsBoost(hz);
+heartEnergyLocal += cleanSpectrum[i] * boost;
+weightSum += boost;
+}
+heartEnergy = weightSum > 0 ? (heartEnergyLocal / weightSum * 100) : 0;
+const voiceLoIdx = hzToBin(CONFIG.FREQ.VOICE_LOW);
+const voiceHiIdx = hzToBin(CONFIG.FREQ.VOICE_HIGH);
+let voiceEnergyLocal = 0;
+const voiceBins = Math.max(1, voiceHiIdx - voiceLoIdx + 1);
+for (let i = voiceLoIdx; i <= voiceHiIdx && i < cleanSpectrum.length; i++) voiceEnergyLocal += cleanSpectrum[i];
+voiceEnergy = voiceBins > 0 ? (voiceEnergyLocal / voiceBins * 100) : 0;
+// v7.0.42: Track frame interval EMA for periodicity FPS calculation
+envelopeDtEmaMs = envelopeDtEmaMs * 0.9 + deltaMs * 0.1;
+// v7.0.42: Pre-calibration periodicity detection (from v7017)
+// Build heartEnergy time series and compute autocorrelation before calibration starts
+const preCalScale = Math.max(8, baseline.mean * 2.5, CONFIG.CALIBRATION.MIN_BASELINE_ENERGY * 2);
+preCalSeries.push(clamp(heartEnergy / preCalScale, 0, 1));
+if (preCalSeries.length >= 40) {
+const preWin = Math.min(80, preCalSeries.length);
+const env = preCalSeries.last(preWin);
+const fps = 1000 / Math.max(1, envelopeDtEmaMs);
+const minLag = Math.max(1, Math.floor((60 / CONFIG.HR.MAX) * fps));
+const maxLag = Math.max(minLag + 1, Math.ceil((60 / CONFIG.HR.MIN) * fps));
+let bestCorr = -1;
+for (let lag = minLag; lag <= maxLag; lag++) {
+const corr = computeAutocorrelation(env, lag);
+if (corr > bestCorr) bestCorr = corr;
+}
+waitPeriodicityScore = Math.max(0, bestCorr);
+} else {
+waitPeriodicityScore = 0;
+}
+const voiceHint = (now - lastVoiceAt) < CONFIG.VOICE.HOLD_MS || voiceEnergy > heartEnergy;
+const periodicityHint = periodicityScore > CONFIG.HR.AUTOCORR_MIN;
+const trueSilence = isSilent && peakToRms < CONFIG.SILENCE.PEAK_TO_RMS_MAX;
+
+// v7.0.42: Noise learning ONLY in NO_CONTACT state with confirmed timer
+const noContactStable = (appState === 'NO_CONTACT') && noContactSince > 0 &&
+  (now - noContactSince) >= CONFIG.CONTACT.NO_CONTACT_LEARN_MS;
+const shouldLearnNoise = noContactStable &&
+trueSilence &&
+!voiceHint &&
+!motion.isShaking &&
+stability.isStable &&
+(now - lastArtifactAt) > 1000;
+if (shouldLearnNoise) updateNoiseFloor(reusableFftData, CONFIG.NOISE.ALPHA);
+
+// Slow drift compensation in CALIBRATION/LIVE
+if ((appState === 'CALIBRATION' || appState === 'LIVE') && noiseFloor && !isSilent) {
+const driftAlpha = 0.998;
+const driftBeta = 1 - driftAlpha;
+for (let i = 0, len = reusableFftData.length; i < len; i++) {
+const val = reusableFftData[i] / 255;
+if (val * 0.3 > noiseFloor[i]) {
+noiseFloor[i] = driftAlpha * noiseFloor[i] + driftBeta * val * 0.3;
+}
+}
+}
+
+// v7.0.42: State machine with NO_CONTACT
+if (appState === 'NO_CONTACT') {
+// Track how long we've been in NO_CONTACT
+if (noContactSince === 0) noContactSince = now;
+// Transition to WAITING when confirmed contact
+if (confirmedContact) {
+lastTransitionReason = 'NO_CONTACT→WAITING'; appState = 'WAITING'; // v7.0.105
+waitingStartAt = now;
+waitingConditionsMet = 0;
+noContactSince = 0;
+}
+// UI
+dom.progressText.textContent = '📱 Place phone on auscultation point';
+dom.progressContainer.classList.add('show');
+dom.progressFill.style.width = '0%';
+const nlSec = noContactStable ? 'NL✓' : `NL:${Math.round((now - (noContactSince || now)) / 1000)}s`;
+dom.statusText.textContent = `${statusLine(`no-contact ${nlSec} | ${lastTransitionReason}`)} | ✗CC`;
+} else if (appState === 'WAITING') {
+// v7.0.42: If contact lost during WAITING → back to NO_CONTACT
+if (!confirmedContact) {
+lastTransitionReason = 'WAITING→NO_CONTACT(cc_lost)'; appState = 'NO_CONTACT'; // v7.0.123
+noContactSince = nowMs();
+waitingConditionsMet = 0;
+waitingStartAt = 0;
+} else {
+updateWaitingState();
+}
+} else if (appState === 'CALIBRATION') {
+updateCalibrationState();
+} else if (appState === 'LIVE') {
+updateLiveState(deltaMs);
+}
+}
+// ============================================================================
+// UI UPDATE
+// ============================================================================
+function updateUI() {
+const now = nowMs();
+if (now - lastUIUpdate < CONFIG.UI.UPDATE_MS) return;
+lastUIUpdate = now;
+const voiceDetected = (now - lastVoiceAt) < CONFIG.VOICE.HOLD_MS;
+dom.voiceBadge.classList.toggle('active', voiceDetected);
+dom.weakBadge.classList.toggle('active', signalStrength < CONFIG.QUALITY.WEAK_THRESHOLD);
+updateNeedleAndPercent();
+detectHR();
+if (now - lastTrendDraw > CONFIG.UI.TREND_DRAW_INTERVAL_MS) {
+drawTrendGraph();
+lastTrendDraw = now;
+}
+if (currentMode === 'visual') {
+drawWaveformAndEnvelope();
+drawSpectrogram(reusableFftData);
+}
+pcgCollectSample(); // v7.0.155: always collect if recording
+if (currentMode === 'ring') {
+updateRingVisualization();
+}
+}
+function onWorkletMessage(e) {
+processDSP();
+updateUI();
+}
+function setMode(mode) {
+currentMode = mode;
+dom.tabPosition.classList.toggle('active', mode === 'position');
+dom.tabRing.classList.toggle('active', mode === 'ring');
+dom.tabVisual.classList.toggle('active', mode === 'visual');
+dom.positionMode.classList.toggle('active', mode === 'position');
+dom.ringMode.classList.toggle('active', mode === 'ring');
+dom.visualMode.classList.toggle('active', mode === 'visual');
+if (mode === 'ring') updateRingVisualization();
+if (mode === 'visual') resizeCanvases();
+}
+// v7.0.57: Pressure hint based on contactLevel
+function getPressureHint() {
+if (contactLevel < 30) return { level: 'light', text: 'Press firmer against chest' };
+if (contactLevel < 60) return { level: 'moderate', text: 'Good pressure — try slightly firmer' };
+if (contactLevel < 85) return { level: 'firm', text: 'Optimal pressure' };
+return { level: 'strong', text: 'Optimal pressure — hold steady' };
+}
+// v7.0.57: Axis/angle hint based on orientation relative to calibration baseline
+function getAngleHint() {
+if (!orient.baseline) return null;
+const dBeta = orient.currentBeta - orient.baseline.beta;
+const dGamma = orient.currentGamma - orient.baseline.gamma;
+const maxDev = Math.max(Math.abs(dBeta), Math.abs(dGamma));
+if (maxDev < 8) return { ok: true, text: 'Angle optimal' };
+// Build directional hint
+let dir = '';
+if (Math.abs(dBeta) > Math.abs(dGamma)) {
+dir = dBeta > 0 ? 'Tilt top edge away from you' : 'Tilt top edge toward you';
+} else {
+dir = dGamma > 0 ? 'Tilt phone left' : 'Tilt phone right';
+}
+return { ok: false, text: dir + ' (' + Math.round(maxDev) + '\u00B0)' };
+}
+// v7.0.146: Contact ring canvas drawing
+function drawContactRing(pct) {
+  const canvas = document.getElementById('contactRingCanvas');
+  if (!canvas) return;
+  const parent = canvas.parentElement;
+  const size = parent ? (parent.offsetWidth || 220) : 220;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.floor(size * dpr);
+  canvas.height = Math.floor(size * dpr);
+  canvas.style.width = size + 'px';
+  canvas.style.height = size + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+  const r = canvas.width / 2 - 8 * dpr;
+  const lineW = 12 * dpr;
+  // dark background fill inside ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - lineW/2 - 2*dpr, 0, 2*Math.PI);
+  ctx.fillStyle = '#0a1929';
+  ctx.fill();
+  // track (background arc)
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0.75 * Math.PI, 2.25 * Math.PI);
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = lineW;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+  if (pct <= 0) return;
+  // color based on pct
+  let col;
+  if (pct < 25)      col = '#f44336';
+  else if (pct < 50) col = '#ff9800';
+  else if (pct < 70) col = '#fdd835';
+  else if (pct < 85) col = '#8bc34a';
+  else               col = '#4caf50';
+  // filled arc
+  const startAngle = 0.75 * Math.PI;
+  const endAngle = startAngle + (pct / 100) * 1.5 * Math.PI;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, endAngle);
+  ctx.strokeStyle = col;
+  ctx.lineWidth = lineW;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+  // glow
+  ctx.shadowColor = col;
+  ctx.shadowBlur = 12 * dpr;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  return col;
+}
+// v7.0.146: Update contact ring value display
+function updateContactRing() {
+  const pct = Math.round(clamp(contactLevel, 0, 100));
+  const col = drawContactRing(isCalibrated ? pct : 0) || 'rgba(255,255,255,0.2)';
+  const el = document.getElementById('contactRingValue');
+  if (el) {
+    el.textContent = isCalibrated ? pct : '--';
+    el.style.color = isCalibrated ? col : 'rgba(255,255,255,0.3)';
+    el.style.textShadow = isCalibrated ? `0 0 20px ${col}` : 'none';
+  }
+}
+// v7.0.143: Pressure + Tilt indicators
+function updatePressureAndTilt() {
+  // --- PRESSURE ---
+  const pBar = document.getElementById('pressureBarFill');
+  const pLbl = document.getElementById('pressureLabel');
+  if (pBar && pLbl) {
+    if (!isCalibrated) {
+      pBar.style.width = '0%';
+      pLbl.textContent = '--';
+    } else {
+      // contactLevel 0-100 as pressure proxy
+      const pct = clamp(contactLevel, 0, 100);
+      let col, txt;
+      if (pct < 25)      { col = '#f44336'; txt = 'Too light'; }
+      else if (pct < 50) { col = '#ff9800'; txt = 'Light'; }
+      else if (pct < 75) { col = '#ffc107'; txt = 'Moderate'; }
+      else if (pct < 90) { col = '#8bc34a'; txt = 'Firm ✓'; }
+      else               { col = '#4caf50'; txt = 'Optimal ✓'; }
+      pBar.style.width = pct + '%';
+      pBar.style.background = col;
+      pLbl.textContent = txt;
+      pLbl.style.color = col;
+    }
+  }
+  // --- TILT ---
+  const dot = document.getElementById('tiltDot');
+  const tiltHint = document.getElementById('tiltHint');
+  if (!dot) return;
+  if (!orient.baseline) {
+    dot.style.top = '14px'; dot.style.left = '14px';
+    dot.style.background = '#888';
+    if (tiltHint) tiltHint.textContent = '--';
+    return;
+  }
+  const dBeta  = clamp(orient.currentBeta  - orient.baseline.beta,  -25, 25);
+  const dGamma = clamp(orient.currentGamma - orient.baseline.gamma, -25, 25);
+  const maxDev = Math.max(Math.abs(dBeta), Math.abs(dGamma));
+  // 36px ring center=14,14, range=11px
+  const cx = 14, cy = 14, range = 11;
+  const dx = (dGamma / 25) * range;
+  const dy = (dBeta  / 25) * range;
+  dot.style.left = clamp(cx + dx, 1, 27) + 'px';
+  dot.style.top  = clamp(cy + dy, 1, 27) + 'px';
+  let col;
+  if (maxDev < 5)       col = '#4caf50';
+  else if (maxDev < 12) col = '#ffc107';
+  else                  col = '#f44336';
+  dot.style.background = col;
+  dot.style.boxShadow = `0 0 5px ${col}99`;
+  if (tiltHint) {
+    if (maxDev < 5) {
+      tiltHint.textContent = '✓ Optimal';
+      tiltHint.style.color = '#4caf50';
+    } else {
+      let dir = '';
+      if (Math.abs(dBeta) >= Math.abs(dGamma)) dir = dBeta > 0 ? '↑ away' : '↓ toward';
+      else dir = dGamma > 0 ? '→ right' : '← left';
+      tiltHint.textContent = dir + ' ' + Math.round(maxDev) + '°';
+      tiltHint.style.color = col;
+    }
+  }
+}
+function updateGuide() {
+if (!isRunning) {
+dom.guideText.textContent = 'Press START to begin';
+dom.guideText.style.color = '#fff';
+dom.guideHint.textContent = 'Move device slowly to find strongest signal';
+return;
+}
+if (!isCalibrated) {
+if (appState === 'CALIBRATION') {
+dom.guideText.textContent = '\uD83D\uDD27 Calibrating...';
+dom.guideText.style.color = '#ffc107';
+dom.guideHint.textContent = 'Hold steady, measuring baseline';
+} else if (appState === 'NO_CONTACT') {
+dom.guideText.textContent = '\uD83D\uDCF1 No body contact';
+dom.guideText.style.color = '#f44336';
+dom.guideHint.textContent = 'Press phone mic to auscultation point';
+} else {
+dom.guideText.textContent = '\uD83D\uDCF1 Contact detected, preparing...';
+dom.guideText.style.color = '#90caf9';
+const ph = getPressureHint();
+dom.guideHint.textContent = 'Hold steady \u2014 Pressure: ' + ph.level;
+}
+return;
+}
+// v7.0.57: LIVE state — combine signal quality + pressure + angle hints
+const score = Math.round(signalStrength);
+const ph = getPressureHint();
+const ah = getAngleHint();
+let hintParts = [];
+// Pressure hint (always show if not optimal)
+if (ph.level === 'light') {
+hintParts.push(ph.text);
+} else if (ph.level === 'moderate' && score < 60) {
+hintParts.push(ph.text);
+}
+// Angle hint (show if deviated from calibration angle)
+if (ah && !ah.ok) {
+hintParts.push(ah.text);
+}
+// Fallback hint based on score
+if (hintParts.length === 0) {
+if (score >= 70) hintParts.push('Hold steady');
+else if (score >= 50) hintParts.push('Try fine position adjustments');
+else if (score >= 30) hintParts.push('Adjust position or pressure');
+else hintParts.push('Reposition device on auscultation point');
+}
+// v7.0.153: SNR-adjusted feedback — SNR<0dB downgrades display one level
+// SQ%=64 + SNR=-0.1dB was showing 'Good signal' — misleading before recording
+const snrPenalty = currentSNR < 0 ? 25 : 0;
+const effectiveScore = score - snrPenalty;
+if (effectiveScore >= 70) {
+dom.guideText.textContent = '\uD83D\uDFE2 Excellent! ' + ph.level + ' pressure';
+dom.guideText.style.color = '#4caf50';
+} else if (effectiveScore >= 50) {
+dom.guideText.textContent = '\uD83D\uDFE1 Good signal \u2014 ' + ph.level + ' pressure';
+dom.guideText.style.color = '#8bc34a';
+} else if (effectiveScore >= 30) {
+dom.guideText.textContent = '\uD83D\uDFE0 Moderate \u2014 ' + ph.level + ' pressure';
+dom.guideText.style.color = '#ffc107';
+} else {
+dom.guideText.textContent = '\uD83D\uDD34 Weak signal \u2014 ' + ph.level + ' pressure';
+dom.guideText.style.color = '#f44336';
+}
+dom.guideHint.textContent = hintParts.join(' | ');
+}
+function updateComparisonBars() {
+if (!bestByPointDirty) return;
+bestByPointDirty = false;
+const barMap = {
+aortic: dom.aorticBar, pulmonary: dom.pulmonaryBar,
+tricuspid: dom.tricuspidBar, mitral: dom.mitralBar, erb: dom.erbBar
+};
+POINT_ORDER.forEach(point => {
+const score = (typeof bestByPoint[point] === 'number') ? bestByPoint[point] : 0;
+const el = barMap[point];
+if (el) {
+el.style.width = clamp(score, 0, 100) + '%';
+el.style.background = qualityColor(score);
+el.innerHTML = score > 0 ? `<span class="comp-value">${Math.round(score)}%</span>` : '';
+}
+});
+}
+function updateNeedleAndPercent() {
+const score = Math.round(clamp(signalStrength, 0, 100));
+const col = qualityColor(score);
+// v7.0.146: SQ цифра с цветом — теперь внутри кольца (v7.0.148)
+dom.signalPercent.textContent = isCalibrated ? score : '--';
+dom.signalPercent.style.color = isCalibrated ? col : 'rgba(255,255,255,0.2)';
+dom.signalPercent.style.textShadow = isCalibrated ? `0 0 16px ${col}66` : 'none';
+dom.snrDisplay.textContent = isCalibrated ? `SNR ${currentSNR.toFixed(1)} dB` : 'SNR -- dB';
+// needle hidden
+if (dom.meterNeedle && dom.meterNeedle.style) {
+  const targetAngle = -135 + (score / 100) * 225;
+  currentNeedleAngle += (targetAngle - currentNeedleAngle) * CONFIG.UI.NEEDLE_SMOOTH;
+  dom.meterNeedle.style.transform = `translateX(-50%) rotate(${currentNeedleAngle}deg)`;
+}
+const voiceDetected = (nowMs() - lastVoiceAt) < CONFIG.VOICE.HOLD_MS;
+if (isCalibrated && !voiceDetected && stability.isSoftStable && currentMode === 'position') {
+if (score > bestSession.score) {
+bestSession.score = score;
+bestSession.point = POINTS[currentPoint].name;
+}
+const prev = (typeof bestByPoint[currentPoint] === 'number') ? bestByPoint[currentPoint] : 0;
+if (score > prev) {
+bestByPoint[currentPoint] = score;
+bestByPointDirty = true;
+}
+}
+dom.bestSession.textContent = bestSession.score ? (bestSession.score + '%') : '--';
+dom.bestPoint.textContent = bestSession.point || '--';
+const pBest = (typeof bestByPoint[currentPoint] === 'number') ? bestByPoint[currentPoint] : null;
+dom.currentPointBest.textContent = (pBest !== null && pBest > 0) ? (Math.round(pBest) + '%') : '--';
+updateComparisonBars();
+updateGuide();
+updatePressureAndTilt();
+updateContactRing();
+}
+function resizeCanvases() {
+if (!dom.waveformCanvas) return;
+const dpr = window.devicePixelRatio || 1;
+const rect = dom.waveformCanvas.getBoundingClientRect();
+dom.waveformCanvas.width = Math.floor(rect.width * dpr);
+dom.waveformCanvas.height = Math.floor(rect.height * dpr);
+dom.waveCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+const rect2 = dom.spectrogramCanvas.getBoundingClientRect();
+dom.spectrogramCanvas.width = Math.floor(rect2.width * dpr);
+dom.spectrogramCanvas.height = Math.floor(rect2.height * dpr);
+dom.spectroCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+dom.canvasW = rect.width;
+dom.canvasH = rect.height;
+}
+function drawWaveformAndEnvelope() {
+const ctx = dom.waveCtx, w = dom.canvasW, h = dom.canvasH;
+ctx.fillStyle = '#0a1929';
+ctx.fillRect(0, 0, w, h);
+if (!lastTimeDomain || !lastTimeDomain.length) return;
+ctx.strokeStyle = '#2196f3';
+ctx.lineWidth = 1;
+ctx.beginPath();
+const step = Math.ceil(lastTimeDomain.length / w);
+for (let x = 0; x < w; x++) {
+const idx = Math.min(x * step, lastTimeDomain.length - 1);
+const y = h / 2 - lastTimeDomain[idx] * h * 0.4;
+if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+}
+ctx.stroke();
+if (envelope.length > 1) {
+ctx.strokeStyle = '#f44336';
+ctx.lineWidth = 2;
+ctx.beginPath();
+const envLen = envelope.length;
+const envStep = w / (envLen - 1);
+for (let i = 0; i < envLen; i++) {
+const x = i * envStep;
+const y = h - envelope.at(i) * h * 3;
+if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+}
+ctx.stroke();
+}
+}
+function drawSpectrogram(fftData) {
+if (!fftData) return;
+const ctx = dom.spectroCtx, w = dom.canvasW, h = dom.canvasH;
+const imgData = ctx.getImageData(1, 0, w - 1, h);
+ctx.putImageData(imgData, 0, 0);
+const barH = h / 64;
+for (let i = 0; i < 64; i++) {
+const idx = Math.floor(i * fftData.length / 64);
+const val = fftData[idx] / 255;
+ctx.fillStyle = `rgb(${Math.floor(val * 255)},${Math.floor(val * 128)},50)`;
+ctx.fillRect(w - 1, h - (i + 1) * barH, 1, barH);
+}
+}
+function detectHR() {
+const now = nowMs();
+const setHrOff = (reason) => {
+hrGateReason = reason;
+hrConfirmed = false;
+// v7.0.118: always keep last valid BPM if fresh (< HR_STALE_MS)
+// Problem: BPM published for 1 frame then immediately cleared by next setHrOff
+// Fix: keepLastBpm for ALL reasons if hrLastValidBpm is fresh
+// v7.0.139: Erb's uses 3s stale limit (vs 8s global) — frequent gate:silent makes
+//           stale BPM misleading; faster '--' gives honest feedback to user
+const erbStaleMs = 3000;
+const staleLimit = (currentPoint === 'erb') ? erbStaleMs / 1000 : HR_STALE_MS / 1000;
+const staleAge = (nowMs() - hrLastValidAt) / 1000;
+const bpmFresh = hrLastValidBpm > 0 && staleAge < staleLimit;
+if (bpmFresh) {
+  dom.hrValue.textContent = hrLastValidBpm;
+  dom.hrValue.style.opacity = staleAge > 2 ? '0.5' : '1.0';
+  dom.hrValue.title = staleAge > 2 ? `last update ${Math.round(staleAge)}s ago` : '';
+  const _pH = document.getElementById('positionHrValue');
+  if (_pH) { _pH.textContent = hrLastValidBpm; _pH.style.color = staleAge > 2 ? 'rgba(255,255,255,0.4)' : '#fff'; }
+} else {
+  dom.hrValue.textContent = '--';
+  dom.hrValue.style.opacity = '1.0';
+  hrLastValidBpm = 0;
+  const _pH = document.getElementById('positionHrValue');
+  if (_pH) { _pH.textContent = '--'; _pH.style.color = 'rgba(255,255,255,0.3)'; }
+}
+dom.phaseLabel.textContent = 'Phase: --';
+dom.phaseLabel.style.color = '#4caf50';
+dom.s1Value.textContent = '--';
+dom.s2Value.textContent = '--';
+dom.snrMetric.textContent = isCalibrated ? currentSNR.toFixed(1) + ' dB' : '--';
+dom.murmurValue.textContent = 'N/A';
+};
+if (appState !== 'LIVE' || !isCalibrated || envelope.length < 20) {
+setHrOff('warming');
+return;
+}
+const artifactActive = now < artifactBurstUntil;
+const contactOK = contactLevel >= ((currentPoint === 'erb') ? CONFIG.CONTACT.LIVE_MIN_ERB : CONFIG.CONTACT.LIVE_MIN); // v7.0.130
+const motionOK = stability.isStable && !motion.isShaking && !motion.isTilted;
+// v7.0.110: softMotionOK for hrGate — only active shaking blocks BPM
+// isStable blocks CAL/WAITING (unchanged), but hrGate uses softer check
+// This allows BPM to survive breathing movement and minor body drift
+const softMotionOK = !motion.isShaking;
+// v7.0.112: hrGate uses lower signalOK threshold than CAL
+// Problem: MIN_BASELINE_ENERGY=1.0 blocks hrGate on Erb's where heartEnergy ~0.3-0.8
+// Fix: separate threshold 0.2 for hrGate only — CAL still uses 1.0
+// Risk: may open gate on slightly weaker signal, but autocorr will reject non-periodic
+const HR_SIGNAL_MIN = 0.2;
+// v7.0.136: Erb's silence bypass — bone contact gives low broadband RMS (rms:17–28)
+// but real heartEnergy (H:43–74). isSilent=true blocks gate despite good signal.
+const isErbsSilentBypass = (currentPoint === 'erb') && heartEnergy > 15;
+const signalOK = (!isSilent || isErbsSilentBypass) && heartEnergy >= HR_SIGNAL_MIN;
+contactStableSince = updateStableSince(contactOK, contactStableSince, now);
+motionStableSince = updateStableSince(softMotionOK, motionStableSince, now);
+signalStableSince = updateStableSince(signalOK, signalStableSince, now);
+// v7.0.103: artifact-tolerant gate + seed-mode reduced thresholds
+// ROOT CAUSE of rP=0/eP=0: hrGate never opened because
+//   motion/artifact freezes constantly reset stable counters
+// FIX:
+//   - artifact freeze pauses autocorr output but does NOT reset counters
+//   - seed thresholds (hrSeeded=false) are more forgiving
+const seedMode = !hrSeeded;
+// v7.0.117: seedMode — bypass hrGate entirely
+// Problem: lastEnvPeak updates INSIDE autocorr block (after hrGate check)
+//          so seedByEvidence based on lastEnvPeak is always stale → gate never opens
+// Fix: in seedMode skip ALL gate checks — let autocorr run freely
+//      thrBase=0.12 already prevents false BPM (autocorr must exceed threshold)
+//      after first valid BPM → hrSeeded=true → normal gates apply
+if (seedMode) {
+  // v7.0.119: seedMode guards — prevent false seed in noise
+  // BPM=150 appeared at SNR=-10dB → need minimum signal quality for first seed
+  // Keep gate bypass but add hard stops for clearly invalid signal
+  const seedContactOK = contactOK;  // must have body contact
+  const seedSNRok = currentSNR > -3.0;  // v7.0.133: was 0.0 — Erb's Point SNR typically -10..+2 dB, 0.0 blocked first seed
+  const seedSignalOK = (!isSilent || isErbsSilentBypass) && heartEnergy >= 0.1;  // v7.0.136: bypass isSilent for Erb's bone contact
+  if (!seedContactOK || !seedSNRok || !seedSignalOK) {
+    setHrOff('stabilizing');
+    periodicityScore = 0;
+    bestLagBpm = 0;
+    return;
+  }
+  // passes guards → run autocorr freely, thrBase=0.12 is final guard
+} else {
+const gateContactMs = CONFIG.HR.GATE_CONTACT_MS;
+const gateMotionMs  = CONFIG.HR.GATE_MOTION_MS;
+const gateSignalMs  = CONFIG.HR.GATE_SIGNAL_MS;
+const contactGateOK = stableFor(contactStableSince, now) >= gateContactMs;
+const motionGateOK  = stableFor(motionStableSince,  now) >= gateMotionMs;
+const signalGateOK  = stableFor(signalStableSince,  now) >= gateSignalMs;
+const voiceGateOK2  = voiceEnergy < heartEnergy * 1.5;
+// v7.0.125: if already seeded+confirmed, bypass contact/motion gate (only require signal+voice)
+// Prevents BPM dropout after brief movement during auscultation
+const seedBypass = hrSeeded && hrConfirmed && signalGateOK && voiceGateOK2;
+const hrGate = seedBypass || (contactGateOK && motionGateOK && signalGateOK && voiceGateOK2);
+if (!hrGate) {
+if (!contactOK) setHrOff('contact');
+else if (!softMotionOK) setHrOff('motion');
+else if (!signalOK) setHrOff('signal');
+else if (!voiceGateOK2) setHrOff('voice');
+else setHrOff('stabilizing');
+periodicityScore = 0;
+bestLagBpm = 0;
+return;
+}
+}
+// v7.0.113: artifact freeze — only block if already seeded
+if (artifactActive && hrSeeded) {
+setHrOff('artifact');
+return;
+}
+// v7.0.103: DUAL PATH periodicity detection — raw (existing) + envelope (new)
+const fps = 1000 / Math.max(CONFIG.UI.UPDATE_MS, 1);
+const minLag = Math.max(1, Math.floor((60 / CONFIG.HR.MAX) * fps));
+const maxLag = Math.max(minLag + 1, Math.ceil((60 / CONFIG.HR.MIN) * fps));
+
+// --- PATH RAW: existing heartEnergy envelope (spectral) ---
+const winRaw = Math.min(CONFIG.HR.PERIODICITY_WINDOW_SAMPLES, envelope.length);
+const envRawSeries = envelope.last(winRaw);
+let bestLagRaw = minLag, bestCorrRaw = -1;
+if (envelope.length >= minLag * 2) {  // v7.0.121: require minimum buffer (same as env path)
+  for (let lag = minLag; lag <= maxLag; lag++) {
+    const corr = computeAutocorrelation(envRawSeries, lag);
+    if (corr > bestCorrRaw) { bestCorrRaw = corr; bestLagRaw = lag; }
+  }
+}
+const rawBpm = clamp(Math.round((60 * fps) / Math.max(1, bestLagRaw)), CONFIG.HR.MIN, CONFIG.HR.MAX);
+bestCorrRaw = Math.max(0, bestCorrRaw);
+lastRawPeak = bestCorrRaw;
+
+// --- PATH ENV: time-domain RMS envelope autocorrelation ---
+let bestLagEnv = minLag, bestCorrEnv = -1, envBpm = 0;
+if (envelopeRaw.length >= minLag * 2) {
+  const winEnv = Math.min(CONFIG.HR.PERIODICITY_WINDOW_SAMPLES, envelopeRaw.length);
+  const envTimeSeries = envelopeRaw.last(winEnv);
+  for (let lag = minLag; lag <= maxLag; lag++) {
+    const corr = computeAutocorrelation(envTimeSeries, lag);
+    if (corr > bestCorrEnv) { bestCorrEnv = corr; bestLagEnv = lag; }
+  }
+  envBpm = clamp(Math.round((60 * fps) / Math.max(1, bestLagEnv)), CONFIG.HR.MIN, CONFIG.HR.MAX);
+  bestCorrEnv = Math.max(0, bestCorrEnv);
+}
+lastEnvPeak = bestCorrEnv;
+
+// --- ADAPTIVE THRESHOLD with seed/lock hysteresis ---
+const contactScoreProxy = clamp(contactLevel, 0, 100);
+const motionPenaltyP = motionFrozen ? 0.5 : 0.1;
+const artifactPenaltyP = (now < artifactBurstUntil) ? 0.5 : 0.1;
+// v7.0.109: seed threshold lowered 0.24→0.12 for first BPM detection
+// v7.0.131: Erb's Point anatomically weak signal → lower thresholds
+const isErbThr = (currentPoint === 'erb');
+const thrBase = hrSeeded
+  ? (isErbThr ? 0.08 : 0.27)   // v7.0.140: seeded erb 0.06→0.08 (rejects noisy rP at T/A<2.0)
+  : (isErbThr ? 0.10 : 0.12);  // unseeded: erb=0.10, others=0.12
+const thrAdj = (contactScoreProxy >= 85) ? -0.04 : (contactScoreProxy >= 70) ? -0.02 : 0;
+const thrPenalty = (motionPenaltyP > 0.35 || artifactPenaltyP > 0.35) ? 0.02 : 0;
+const thrUsed = clamp(thrBase + thrAdj + thrPenalty, 0.10, 0.30);
+
+// --- CANDIDATE SELECTION by fused score ---
+const contactBonus = 0.05 * clamp(contactScoreProxy / 100, 0, 1);
+const sharedPenalty = 0.08 * motionPenaltyP + 0.08 * artifactPenaltyP;
+const rawScore = (bestCorrRaw > 0 && rawBpm > 0) ? bestCorrRaw + contactBonus - sharedPenalty : -1;
+const envScore = (bestCorrEnv > 0 && envBpm > 0) ? bestCorrEnv + contactBonus - sharedPenalty : -1;
+
+// v7.0.120: fix — env path was blocked when rawScore > envScore even if rawCorr < thr
+// Old logic: env selected only if (envCorr>=thr AND envScore>=rawScore) → BPM=0 if rawScore high
+// New logic: select whichever path passes threshold with highest score
+let selectedPeak, selectedBpm, selectedSource;
+const envOK = bestCorrEnv >= thrUsed && envBpm > 0;
+const rawOK = bestCorrRaw >= thrUsed && rawBpm > 0;
+if (envOK && rawOK) {
+  // both pass — pick higher score
+  if (envScore >= rawScore) {
+    selectedPeak = bestCorrEnv; selectedBpm = envBpm; selectedSource = 'env';
+  } else {
+    selectedPeak = bestCorrRaw; selectedBpm = rawBpm; selectedSource = 'raw';
+  }
+} else if (envOK) {
+  selectedPeak = bestCorrEnv; selectedBpm = envBpm; selectedSource = 'env';
+} else if (rawOK) {
+  selectedPeak = bestCorrRaw; selectedBpm = rawBpm; selectedSource = 'raw';
+} else {
+  selectedPeak = Math.max(bestCorrRaw, bestCorrEnv);
+  selectedBpm = 0; selectedSource = '--';
+}
+lastSelectedSource = selectedSource;
+periodicityScore = selectedPeak;
+// v7.0.124: Anti-subharmonic correction
+// v7.0.126: + Anti-superharmonic + first-lock plausibility
+if (selectedBpm > 0 && hrSeeded && hrConfirmed && heartRate > 0) {
+  const ratio = selectedBpm / heartRate;
+  // 2:1 superharmonic: detected=120 when real=60 (S1→S2 lag instead of S1→S1)
+  if (ratio > 1.6 && ratio < 2.4) {
+    const corrected = Math.round(selectedBpm / 2);
+    if (corrected >= CONFIG.HR.MIN && corrected <= CONFIG.HR.MAX) {
+      selectedBpm = corrected;
+      lastSelectedSource += '+sh2x';
+    }
+  }
+  // 2:3 subharmonic: detected=50 when real=75 (ratio≈0.667)
+  if (ratio > 0.55 && ratio < 0.75) {
+    const corrected = Math.round(selectedBpm * 1.5);
+    if (corrected >= CONFIG.HR.MIN && corrected <= CONFIG.HR.MAX) {
+      selectedBpm = corrected;
+      lastSelectedSource += '+sh32';
+    }
+  }
+  // 1:2 subharmonic: detected=37 when real=75 (ratio≈0.5)
+  if (ratio > 0.40 && ratio < 0.55) {
+    const corrected = selectedBpm * 2;
+    if (corrected >= CONFIG.HR.MIN && corrected <= CONFIG.HR.MAX) {
+      selectedBpm = corrected;
+      lastSelectedSource += '+sh21';
+    }
+  }
+}
+// v7.0.126: First-lock plausibility — if no prior seed and BPM>100 at low SNR,
+// suspect superharmonic (S1→S2 lag). Try half value.
+if (selectedBpm > 0 && !hrSeeded && selectedBpm > 100 && currentSNR < 3.0) {
+  const half = Math.round(selectedBpm / 2);
+  if (half >= CONFIG.HR.SUBHARM_MIN_DISPLAY && half <= 100) {
+    selectedBpm = half;
+    lastSelectedSource += '+fl2x';
+  }
+}
+// v7.0.137: rP-based first-lock guard — halve BPM>100 when autocorr confidence low
+if (selectedBpm > 0 && !hrSeeded && selectedBpm > 100 && selectedPeak < 0.15) {
+  const half = Math.round(selectedBpm / 2);
+  if (half >= CONFIG.HR.SUBHARM_MIN_DISPLAY && half <= 100) {
+    selectedBpm = half;
+    lastSelectedSource += '+rp2x';
+  }
+}
+// v7.0.145: Erb's first-lock superharmonic guard — BPM>90 always halve
+// Problem: BPM=150/145 at Erb's first seed (lag:0.55s = S1→S2, not S1→S1)
+// Physiologically implausible as first lock — real HR <100 at rest
+if (selectedBpm > 0 && !hrSeeded && currentPoint === 'erb' && selectedBpm > 90) {
+  const half = Math.round(selectedBpm / 2);
+  if (half >= CONFIG.HR.SUBHARM_MIN_DISPLAY && half <= 100) {
+    selectedBpm = half;
+    lastSelectedSource += '+erb2x';
+  }
+}
+// v7.0.127: First-lock subharmonic guard — 50-59 bpm at low SNR likely 2:3 subharmonic
+if (selectedBpm > 0 && !hrSeeded && selectedBpm >= 50 && selectedBpm <= 59 && currentSNR < 3.0) {
+  const corrected = Math.round(selectedBpm * 1.5);
+  if (corrected >= 60 && corrected <= CONFIG.HR.MAX) {
+    selectedBpm = corrected;
+    lastSelectedSource += '+fl32';
+  }
+}
+// v7.0.138: First-lock 1:2 subharmonic guard — BPM<55 at low SNR likely half of real HR
+if (selectedBpm > 0 && !hrSeeded && selectedBpm < 55 && currentSNR < 3.0) {
+  const corrected = selectedBpm * 2;
+  if (corrected >= 60 && corrected <= CONFIG.HR.MAX) {
+    selectedBpm = corrected;
+    lastSelectedSource += '+fl21';
+  }
+}
+// Block display if BPM below display minimum and no prior lock
+if (selectedBpm > 0 && selectedBpm < CONFIG.HR.SUBHARM_MIN_DISPLAY && !hrSeeded) {
+  selectedBpm = 0;
+}
+// v7.0.140: Anti-subharmonic lag guard for Erb's
+// v7.0.149: expanded T/A threshold 2.0→3.5 (BPM=40 appeared at T/A=3.6 in test)
+if (selectedBpm > 0 && currentPoint === 'erb') {
+  const lagSecs = selectedBpm > 0 ? 60 / selectedBpm : 0;
+  if (lagSecs > 1.0 && lastTissueRatio < 3.5) {
+    const corrected = selectedBpm * 2;
+    if (corrected >= 60 && corrected <= CONFIG.HR.MAX) {
+      selectedBpm = corrected;
+      lastSelectedSource += '+lag21';
+    }
+  }
+}
+bestLagBpm = selectedBpm;
+
+if (selectedBpm <= 0) {
+setHrOff('periodicity-low');
+return;
+}
+const newHR = bestLagBpm;
+if (heartRate > 0 && hrConfirmed) {
+const jumpRatio = Math.abs(newHR - heartRate) / heartRate;
+const maxJump = (currentPoint === 'erb') ? CONFIG.HR.MAX_JUMP_RATIO_ERB : CONFIG.HR.MAX_JUMP_RATIO; // v7.0.135
+if (jumpRatio > maxJump) {
+setHrOff('hr-jump');
+return;
+}
+heartRate = Math.round(heartRate * 0.75 + newHR * 0.25);
+} else {
+heartRate = newHR;
+}
+hrConfirmed = true;
+hrSeeded = true;  // v7.0.103: lock threshold after first valid BPM
+hrGateReason = 'ok';
+// v7.0.154: SNR+SQ gate + physiological clamp
+// Gate: SQ%<45 OR SNR<0dB → freeze, do not update buffer
+// Clamp: if prev valid BPM known, reject values outside ±35% (catches x0.5/x2 aliases)
+const sqNow = Math.round(Math.min(Math.max(signalStrength, 0), 100));
+const bpmGateOK = (sqNow >= 45) && (currentSNR >= 0);
+let displayHR = heartRate;
+if (currentPoint === 'erb') {
+  if (bpmGateOK) {
+    let hrToAdd = heartRate;
+    // physiological clamp vs last valid
+    if (hrLastValidBpm > 0) {
+      const ratio = hrToAdd / hrLastValidBpm;
+      // correct x0.5 alias (e.g. 40 when real=80)
+      if (ratio > 0.4 && ratio < 0.6) hrToAdd = Math.round(hrToAdd * 2);
+      // correct x2 alias (e.g. 160 when real=80)
+      else if (ratio > 1.7 && ratio < 2.3) hrToAdd = Math.round(hrToAdd / 2);
+      // reject if still outside ±35% physiological range
+      const ratio2 = hrToAdd / hrLastValidBpm;
+      if (ratio2 < 0.65 || ratio2 > 1.35) hrToAdd = hrLastValidBpm; // hold
+    }
+    erbBpmBuffer.push(hrToAdd);
+    if (erbBpmBuffer.length > 5) erbBpmBuffer.shift();
+  }
+  if (erbBpmBuffer.length >= 3) {
+    const sorted = [...erbBpmBuffer].sort((a, b) => a - b);
+    displayHR = sorted[Math.floor(sorted.length / 2)];
+  } else if (hrLastValidBpm > 0) {
+    displayHR = hrLastValidBpm;
+  }
+} else {
+  // non-Erb: SNR gate + physiological clamp
+  if (bpmGateOK && hrLastValidBpm > 0) {
+    const ratio = heartRate / hrLastValidBpm;
+    if (ratio > 0.4 && ratio < 0.6) displayHR = Math.round(heartRate * 2);
+    else if (ratio > 1.7 && ratio < 2.3) displayHR = Math.round(heartRate / 2);
+    const ratio2 = displayHR / hrLastValidBpm;
+    if (ratio2 < 0.65 || ratio2 > 1.35) displayHR = hrLastValidBpm;
+  } else if (!bpmGateOK && hrLastValidBpm > 0) {
+    displayHR = hrLastValidBpm;
+  }
+}
+if (lastBeatMs === 0) lastBeatMs = now;
+const beatMs = 60000 / Math.max(1, displayHR);
+const elapsed = now - lastBeatMs;
+beatPhase = (elapsed % beatMs) / beatMs;
+if (elapsed >= beatMs) lastBeatMs = now;
+hrLastValidBpm = displayHR;
+hrLastValidAt = nowMs();
+dom.hrValue.textContent = displayHR;
+dom.hrValue.style.opacity = '1.0';
+dom.hrValue.title = '';
+// v7.0.142: sync BPM to Position tab display
+const _pHr = document.getElementById('positionHrValue');
+if (_pHr) { _pHr.textContent = displayHR; _pHr.style.color = '#fff'; }
+if (beatPhase < CONFIG.HR.SYSTOLE_FRACTION) {
+dom.phaseLabel.textContent = 'Phase: Systole';
+dom.phaseLabel.style.color = '#ff5252';
+const _pPh = document.getElementById('positionPhaseLabel');
+if (_pPh) { _pPh.textContent = 'Systole'; _pPh.style.color = '#ff5252'; }
+} else {
+dom.phaseLabel.textContent = 'Phase: Diastole';
+dom.phaseLabel.style.color = '#4caf50';
+const _pPh = document.getElementById('positionPhaseLabel');
+if (_pPh) { _pPh.textContent = 'Diastole'; _pPh.style.color = '#4caf50'; }
+}
+dom.s1Value.textContent = Math.round(signalStrength * 0.8);
+dom.s2Value.textContent = Math.round(signalStrength * 0.6);
+dom.snrMetric.textContent = currentSNR.toFixed(1) + ' dB';
+dom.murmurValue.textContent = periodicityScore >= (CONFIG.HR.AUTOCORR_MIN + 0.15) ? 'Low' : 'Possible';
+// v7.0.142: update S1/S2/SNR in position tab
+const _pS = document.getElementById('positionS1S2');
+if (_pS) _pS.innerHTML = `S1: ${Math.round(signalStrength*0.8)} &nbsp; S2: ${Math.round(signalStrength*0.6)}`;
+const _pSn = document.getElementById('positionSnr');
+if (_pSn) _pSn.textContent = `SNR ${currentSNR.toFixed(1)} dB`;
+}
+const workletCode = `
+class SampleProcessor extends AudioWorkletProcessor {
+constructor() {
+super();
+this.buffer = new Float32Array(2048);
+this.writePos = 0;
+}
+process(inputs) {
+const input = inputs[0];
+if (input && input[0]) {
+const data = input[0];
+for (let i = 0; i < data.length; i++) {
+this.buffer[this.writePos++] = data[i];
+if (this.writePos >= 2048) {
+this.port.postMessage({ tick: 1 });
+this.writePos = 0;
+}
+}
+}
+return true;
+}
+}
+registerProcessor('sample-processor', SampleProcessor);
+`;
+function updateMotionMask() {
+const now = nowMs();
+if (!stability.isStable || motion.isShaking || motion.isTilted) {
+lastMotionAt = now;
+motionFrozen = true;
+} else if (motionFrozen && (now - lastMotionAt) > CONFIG.MOTION.FREEZE_MS) {
+motionFrozen = false;
+}
+return motionFrozen;
+}
+function computeAutocorrelation(arr, lag) {
+if (arr.length < lag * 2) return 0;
+const n = arr.length - lag;
+const m = mean(arr);
+let num = 0, den = 0;
+for (let i = 0; i < n; i++) {
+const d = arr[i] - m;
+num += d * (arr[i + lag] - m);
+den += d * d;
+}
+return den > 0 ? num / den : 0;
+}
+// ============================================================================
+// START / STOP / RESET / RECALIBRATE
+// ============================================================================
+async function startAnalysis() {
+try {
+await requestMotionPermissions();
+stream = await navigator.mediaDevices.getUserMedia({
+audio: {
+echoCancellation: false,
+noiseSuppression: false,
+autoGainControl: false,
+sampleRate: { ideal: CONFIG.DSP.SAMPLE_RATE_IDEAL }
+}
+});
+audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+sampleRate: CONFIG.DSP.SAMPLE_RATE_IDEAL
+});
+if (audioCtx.state === 'suspended') await audioCtx.resume();
+sampleRate = audioCtx.sampleRate;
+buildBinHzCache();
+mic = audioCtx.createMediaStreamSource(stream);
+analyser = audioCtx.createAnalyser();
+analyser.fftSize = CONFIG.DSP.FFT_SIZE;
+analyser.smoothingTimeConstant = 0.3;
+zeroGain = audioCtx.createGain();
+zeroGain.gain.value = 0;
+if (!audioCtx.audioWorklet) {
+alert('Браузер не поддерживает AudioWorklet. Используйте Chrome 66+ или Safari 14.1+');
+stopAnalysis();
+return;
+}
+const blob = new Blob([workletCode], { type: 'application/javascript' });
+const url = URL.createObjectURL(blob);
+await audioCtx.audioWorklet.addModule(url);
+URL.revokeObjectURL(url);
+workletNode = new AudioWorkletNode(audioCtx, 'sample-processor');
+workletNode.port.onmessage = onWorkletMessage;
+mic.connect(analyser);
+mic.connect(workletNode);
+workletNode.connect(zeroGain);
+zeroGain.connect(audioCtx.destination);
+isRunning = true;
+isCalibrated = false;
+appState = 'WAITING';
+waitingConditionsMet = 0;
+calStartAt = 0;
+lastGoodContactAt = 0;
+silenceDurationMs = 0;
+silenceStartAt = 0;
+contactLostAt = 0;
+continuousMotionStart = 0;
+motionStartAt = 0;
+lastProcessTime = 0;
+calFrames = [];
+contactCalFrames = [];
+envelope.clear();
+envelopeRaw.clear();  // v7.0.122: reset env buffer on recal/point-change
+rr = [];
+heartRate = 0;
+hrConfirmed = false;
+lastPeakMs = 0;
+lastBeatMs = 0;
+beatPhase = 0;
+lastVoiceAt = 0;
+voiceDominantFrames = 0;
+lowHdrFrames = 0;
+periodicityScore = 0;
+bestLagBpm = 0;
+hrGateReason = 'init';
+contactStableSince = 0;
+motionStableSince = 0;
+signalStableSince = 0;
+artifactBurstUntil = 0;
+lastSignalRMS = 0;
+lastHfEnergy = 0;
+lastUIUpdate = 0;
+lastTrendDraw = 0;
+orient.baseline = null;
+motion.smoothAccel = 0;
+motion.baseTotal = null;
+motion.accelBuffer = [];
+motion.isShaking = false;
+motion.isTilted = false;
+motion.currentHint = null;
+stability.isStable = true;
+stability.isSoftStable = true;
+reusableFftData = null;
+reusableTimeDomain = null;
+isSilent = false;
+lastMotionAt = 0;
+motionFrozen = false;
+bestByPointDirty = false;
+resetDenoiser();
+resetTrendHistory();
+resetContactIndicator();
+setStabilityUI();
+updateMotionHint();
+dom.startBtn.style.display = 'none';
+dom.stopBtn.style.display = 'block';
+dom.recalBtn.style.display = 'none';
+  const _rB = document.getElementById('recordBtn'); if(_rB) { _rB.style.display='none'; if(pcgRecording) pcgStopRecording(); }
+dom.progressContainer.classList.add('show');
+dom.progressFill.style.width = '0%';
+dom.progressText.textContent = '📱 Place phone on auscultation point';
+dom.statusText.textContent = '⏳ Waiting for contact...';
+updateGuide();
+addMotionListeners();
+} catch (err) {
+alert('Microphone error: ' + (err && err.message ? err.message : err));
+stopAnalysis();
+}
+}
+function stopAnalysis() {
+if (resizeTimer) { clearTimeout(resizeTimer); resizeTimer = null; }
+try {
+if (workletNode && workletNode.port) workletNode.port.onmessage = null;
+if (workletNode) workletNode.disconnect();
+if (zeroGain) zeroGain.disconnect();
+if (mic) mic.disconnect();
+if (analyser) analyser.disconnect();
+if (audioCtx) audioCtx.close();
+if (stream) stream.getTracks().forEach(t => t.stop());
+} catch (e) {}
+audioCtx = mic = analyser = stream = workletNode = zeroGain = null;
+isRunning = false;
+isCalibrated = false;
+appState = 'WAITING';
+waitingConditionsMet = 0;
+calStartAt = 0;
+lastGoodContactAt = 0;
+silenceDurationMs = 0;
+silenceStartAt = 0;
+contactLostAt = 0;
+continuousMotionStart = 0;
+motionStartAt = 0;
+periodicityScore = 0;
+bestLagBpm = 0;
+hrGateReason = 'stopped';
+contactStableSince = 0;
+motionStableSince = 0;
+signalStableSince = 0;
+artifactBurstUntil = 0;
+lastSignalRMS = 0;
+lastHfEnergy = 0;
+lastProcessTime = 0;
+removeMotionListeners();
+dom.startBtn.style.display = 'block';
+dom.stopBtn.style.display = 'none';
+dom.recalBtn.style.display = 'none';
+  const _rB = document.getElementById('recordBtn'); if(_rB) { _rB.style.display='none'; if(pcgRecording) pcgStopRecording(); }
+dom.progressContainer.classList.remove('show');
+dom.statusText.textContent = '⚪ Stopped';
+dom.signalPercent.textContent = '--';
+dom.snrDisplay.textContent = 'SNR -- dB';
+dom.hrValue.textContent = '--';
+const _pHrReset = document.getElementById('positionHrValue');
+if (_pHrReset) { _pHrReset.textContent = '--'; _pHrReset.style.color = 'rgba(255,255,255,0.3)'; }
+const _pPhReset = document.getElementById('positionPhaseLabel');
+if (_pPhReset) _pPhReset.textContent = '';
+dom.voiceBadge.classList.remove('active');
+dom.weakBadge.classList.remove('active');
+dom.unstableBadge.classList.remove('active');
+resetContactIndicator();
+updateMotionHint();
+updateGuide();
+}
+function resetAll() {
+stopAnalysis();
+bestSession = { score: 0, point: '' };
+bestByPoint = {};
+bestByPointDirty = true;
+signalStrength = 0;
+currentSNR = 0;
+currentNeedleAngle = -135;
+envelope.clear();
+envelopeRaw.clear();  // v7.0.122: reset env buffer on recal/point-change
+preCalSeries.clear();   // v7.0.42
+rr = [];
+heartRate = 0;
+hrConfirmed = false;
+periodicityScore = 0;
+waitPeriodicityScore = 0;   // v7.0.42
+bestLagBpm = 0;
+hrGateReason = 'reset';
+contactStableSince = 0;
+motionStableSince = 0;
+signalStableSince = 0;
+artifactBurstUntil = 0;
+lastArtifactAt = 0;         // v7.0.42
+lastLfBandEnergy = 0;       // v7.0.42
+waitVoiceDominantFrames = 0; // v7.0.42
+waitLowHdrFrames = 0;       // v7.0.42
+motion.baseTotal = null;
+motion.accelBuffer = [];
+motion.isShaking = false;
+motion.isTilted = false;
+motion.currentHint = null;
+orient.baseline = null;
+resetDenoiser();
+resetTrendHistory();
+resetContactIndicator();
+dom.bestSession.textContent = '--';
+dom.bestPoint.textContent = '--';
+dom.currentPointBest.textContent = '--';
+['aorticBar', 'pulmonaryBar', 'tricuspidBar', 'mitralBar', 'erbBar'].forEach(id => {
+dom[id].style.width = '0%';
+dom[id].innerHTML = '';
+});
+if (dom.waveCtx) {
+dom.waveCtx.fillStyle = '#0a1929';
+dom.waveCtx.fillRect(0, 0, dom.canvasW || 300, dom.canvasH || 180);
+}
+if (dom.spectroCtx) {
+dom.spectroCtx.clearRect(0, 0, dom.canvasW || 300, dom.canvasH || 180);
+}
+updateGuide();
+updateMotionHint();
+updateRingVisualization();
+}
+function recalibrate() {
+if (!isRunning) return;
+triggerRecalibration('Manual recalibration');
+motion.baseTotal = null;
+motion.accelBuffer = [];
+motion.isShaking = false;
+motion.isTilted = false;
+orient.baseline = null;
+hrGateReason = 'manual recal';
+resetDenoiser();
+resetTrendHistory();
+resetContactIndicator();
+dom.voiceBadge.classList.remove('active');
+dom.weakBadge.classList.remove('active');
+updateMotionHint();
+updateGuide();
+}
+function onPointChange() {
+sustainedSignalFrames = 0;  // v7.0.81: reset S on point change
+currentPoint = dom.pointSelect.value;
+if (dom.pointLabel) dom.pointLabel.textContent = POINTS[currentPoint].name;
+if (dom.pointLabelTop) dom.pointLabelTop.textContent = POINTS[currentPoint].name;
+dom.currentPointLabel.textContent = POINTS[currentPoint].name.split(' ')[0];
+const pBest = (typeof bestByPoint[currentPoint] === 'number') ? bestByPoint[currentPoint] : null;
+dom.currentPointBest.textContent = (pBest !== null && pBest > 0) ? (Math.round(pBest) + '%') : '--';
+}
+// ============================================================================
+// v7.0.155: PCG WAV RECORDER
+// ============================================================================
+function pcgCanRecord() {
+  const sq = Math.round(Math.min(Math.max(signalStrength, 0), 100));
+  return isRunning && isCalibrated && sq >= 50;
+}
+
+function pcgStartRecording() {
+  if (pcgRecording || !pcgCanRecord()) return;
+  pcgRecording = true;
+  pcgChunks = [];
+  pcgBeatMarkers = [];
+  pcgStartTime = Date.now();
+  pcgSampleRate = sampleRate || 44100;
+  const btn = document.getElementById('recordBtn');
+  if (btn) { btn.textContent = '⏹ 30s'; btn.classList.add('recording'); }
+  // countdown timer
+  pcgTimerInterval = setInterval(() => {
+    const elapsed = Math.round((Date.now() - pcgStartTime) / 1000);
+    const remaining = 30 - elapsed;
+    if (btn) btn.textContent = remaining > 0 ? `⏹ ${remaining}s` : '⏹ 0s';
+    if (remaining <= 0) pcgStopRecording();
+  }, 500);
+}
+
+function pcgStopRecording() {
+  if (!pcgRecording) return;
+  pcgRecording = false;
+  clearInterval(pcgTimerInterval);
+  const btn = document.getElementById('recordBtn');
+  if (btn) { btn.textContent = '⏺ RECORD'; btn.classList.remove('recording'); }
+  if (pcgChunks.length === 0) return;
+  pcgBuildAndShow();
+}
+
+function pcgCollectSample() {
+  if (!pcgRecording || !lastTimeDomain) return;
+  // store copy of current frame
+  pcgChunks.push(new Float32Array(lastTimeDomain));
+  // mark beat if hrConfirmed and fresh
+  if (hrConfirmed && hrLastValidBpm > 0) {
+    const elapsed = Date.now() - pcgStartTime;
+    if (pcgBeatMarkers.length === 0 ||
+        elapsed - pcgBeatMarkers[pcgBeatMarkers.length-1] > 300) {
+      pcgBeatMarkers.push(elapsed);
+    }
+  }
+}
+
+function pcgBuildAndShow() {
+  // Flatten all chunks into one Float32Array
+  const frameSize = pcgChunks[0].length;
+  const total = pcgChunks.length * frameSize;
+  const pcm = new Float32Array(total);
+  for (let i = 0; i < pcgChunks.length; i++) {
+    pcm.set(pcgChunks[i], i * frameSize);
+  }
+  // Build WAV blob
+  const wav = pcgEncodeWAV(pcm, pcgSampleRate);
+  const wavUrl = URL.createObjectURL(new Blob([wav], {type:'audio/wav'}));
+  // Show in Waveform tab
+  pcgDrawReview(pcm, pcgSampleRate);
+  // Switch to Waveform tab
+  const tabVisual = document.getElementById('tabVisual');
+  if (tabVisual) tabVisual.click();
+  // Offer download via Export button
+  const expBtn = document.getElementById('exportBtn');
+  if (expBtn) {
+    expBtn._pcgUrl = wavUrl;
+    expBtn._pcgName = `pcg_${currentPoint}_${new Date().toISOString().slice(0,16).replace(/[T:]/g,'-')}.wav`;
+    expBtn.textContent = '💾 Save WAV';
+    expBtn.style.background = '#2e7d32';
+  }
+  // free memory
+  pcgChunks = [];
+}
+
+function pcgEncodeWAV(samples, sr) {
+  const numCh = 1, bitsPerSample = 16;
+  const byteRate = sr * numCh * bitsPerSample / 8;
+  const blockAlign = numCh * bitsPerSample / 8;
+  const dataLen = samples.length * 2;
+  const buf = new ArrayBuffer(44 + dataLen);
+  const view = new DataView(buf);
+  function str(offset, s) { for(let i=0;i<s.length;i++) view.setUint8(offset+i, s.charCodeAt(i)); }
+  str(0,'RIFF'); view.setUint32(4, 36+dataLen, true);
+  str(8,'WAVE'); str(12,'fmt '); view.setUint32(16,16,true);
+  view.setUint16(20,1,true); view.setUint16(22,numCh,true);
+  view.setUint32(24,sr,true); view.setUint32(28,byteRate,true);
+  view.setUint16(32,blockAlign,true); view.setUint16(34,bitsPerSample,true);
+  str(36,'data'); view.setUint32(40,dataLen,true);
+  let offset = 44;
+  for (let i=0; i<samples.length; i++, offset+=2) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(offset, s < 0 ? s*32768 : s*32767, true);
+  }
+  return buf;
+}
+
+// v7.0.156: PCG Review state
+let pcgReviewPcm = null, pcgReviewSr = 0;
+let pcgReviewOffset = 0; // start sample of current view window
+const PCG_VIEW_SEC = 6;  // show 6 seconds at a time
+let pcgS1Peaks = [], pcgS2Peaks = []; // sample indices
+
+function pcgDetectS1S2(pcm, sr) {
+  // Bandpass envelope: 20-200Hz heart sound range
+  const N = pcm.length;
+  // Simple IIR bandpass via two-pass biquad (20Hz hp + 200Hz lp)
+  // HP 20Hz
+  const hp = new Float32Array(N);
+  const fc1 = 20/sr, w1 = 2*Math.PI*fc1;
+  const k1 = Math.tan(w1/2); const norm1 = 1/(1+k1);
+  let x1=0,x2=0,y1=0,y2=0;
+  for(let i=0;i<N;i++){
+    const x0=pcm[i];
+    hp[i]=norm1*(x0-2*x1+x2-(k1-1)/(k1+1)*(- 2*y1)-((1-k1)/(1+k1))*y2);
+    // simplified: just use difference for high pass effect
+    hp[i] = i>0 ? (pcm[i]-pcm[i-1])*0.98 + (i>1?hp[i-1]*0.98:0) : 0;
+    x2=x1;x1=x0;y2=y1;y1=hp[i];
+  }
+  // LP 200Hz — moving average
+  const lpWin = Math.round(sr/200);
+  const env = new Float32Array(N);
+  let sum=0;
+  const buf200 = new Float32Array(lpWin);
+  let bi=0;
+  for(let i=0;i<N;i++){
+    const v=Math.abs(pcm[i]);
+    sum+=v-buf200[bi];
+    buf200[bi]=v; bi=(bi+1)%lpWin;
+    env[i]=sum/lpWin;
+  }
+  // Smooth envelope: 50ms window
+  const smWin = Math.round(sr*0.05);
+  const smEnv = new Float32Array(N);
+  let smSum=0;
+  const smBuf = new Float32Array(smWin);
+  let si=0;
+  for(let i=0;i<N;i++){
+    smSum+=env[i]-smBuf[si];
+    smBuf[si]=env[i]; si=(si+1)%smWin;
+    smEnv[i]=smSum/smWin;
+  }
+  // Find threshold (85th percentile approx)
+  const sorted = Float32Array.from(smEnv).sort();
+  const thr = sorted[Math.floor(sorted.length*0.85)];
+  // Peak picking: min distance 200ms
+  const minDist = Math.round(sr*0.20);
+  const peaks = [];
+  let lastPk = -minDist;
+  for(let i=1;i<N-1;i++){
+    if(smEnv[i]>thr && smEnv[i]>=smEnv[i-1] && smEnv[i]>=smEnv[i+1] && (i-lastPk)>=minDist){
+      peaks.push({idx:i, amp:smEnv[i]});
+      lastPk=i;
+    }
+  }
+  // Classify S1/S2 by interval:
+  // short interval after peak → S1 (systole gap ~300ms)
+  // long interval after peak → S2 (diastole gap ~500ms+)
+  const s1=[],s2=[];
+  if(peaks.length<2){ peaks.forEach(p=>s1.push(p.idx)); return {s1,s2,smEnv}; }
+  const intervals = peaks.slice(1).map((p,i)=>(p.idx-peaks[i].idx)/sr*1000);
+  const meanInt = intervals.reduce((a,b)=>a+b,0)/intervals.length;
+  for(let i=0;i<peaks.length;i++){
+    const nextInt = i<intervals.length ? intervals[i] : meanInt*1.5;
+    // S1: followed by short systolic interval (~250-400ms)
+    // S2: followed by long diastolic interval (>450ms)
+    if(nextInt < meanInt*0.75) s1.push(peaks[i].idx);
+    else s2.push(peaks[i].idx);
+  }
+  return {s1,s2,smEnv};
+}
+
+function pcgDrawReview(pcm, sr) {
+  pcgReviewPcm = pcm;
+  pcgReviewSr = sr;
+  pcgReviewOffset = 0;
+  // Detect S1/S2
+  const {s1,s2,smEnv} = pcgDetectS1S2(pcm, sr);
+  pcgS1Peaks = s1; pcgS2Peaks = s2;
+  // Show review controls
+  pcgRenderReviewWindow(smEnv);
+  // Update metrics
+  const bpm = (s1.length+s2.length) > 1 ?
+    Math.round(60/((pcm.length/sr)/((s1.length+s2.length)/2))) : 0;
+  const _s1el = document.getElementById('s1Value');
+  const _s2el = document.getElementById('s2Value');
+  if(_s1el) _s1el.textContent = s1.length;
+  if(_s2el) _s2el.textContent = s2.length;
+  // Add nav buttons if not present
+  pcgEnsureNavButtons();
+}
+
+function pcgRenderReviewWindow(smEnv) {
+  const canvas = dom.waveformCanvas;
+  if(!canvas || !pcgReviewPcm) return;
+  const ctx = dom.waveCtx;
+  const w = dom.canvasW || canvas.width;
+  const h = dom.canvasH || canvas.height;
+  const pcm = pcgReviewPcm, sr = pcgReviewSr;
+  const viewSamples = Math.round(PCG_VIEW_SEC * sr);
+  const start = pcgReviewOffset;
+  const end = Math.min(start + viewSamples, pcm.length);
+  // Background
+  ctx.fillStyle = '#0a1929';
+  ctx.fillRect(0,0,w,h);
+  // Time grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1;
+  for(let s=0;s<=PCG_VIEW_SEC;s++){
+    const x = Math.round(s/PCG_VIEW_SEC*w);
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.3)';
+    ctx.font='9px sans-serif';
+    ctx.fillText(`${((start/sr)+s).toFixed(1)}s`, x+2, h-4);
+  }
+  // Center line
+  ctx.strokeStyle='rgba(255,255,255,0.1)';
+  ctx.beginPath(); ctx.moveTo(0,h/2); ctx.lineTo(w,h/2); ctx.stroke();
+  // Waveform
+  ctx.strokeStyle='#4fc3f7'; ctx.lineWidth=1;
+  ctx.beginPath();
+  for(let x=0;x<w;x++){
+    const idx = start + Math.floor(x/w*(end-start));
+    if(idx>=pcm.length) break;
+    const y = h/2 - pcm[idx]*h*0.42;
+    x===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  // Envelope (if available)
+  if(smEnv || window._pcgSmEnv){
+    const env = smEnv || window._pcgSmEnv;
+    ctx.strokeStyle='rgba(239,83,80,0.6)'; ctx.lineWidth=1.5;
+    ctx.beginPath();
+    for(let x=0;x<w;x++){
+      const idx = start+Math.floor(x/w*(end-start));
+      if(idx>=env.length) break;
+      const y = h - env[idx]*h*6;
+      x===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    if(!window._pcgSmEnv && smEnv) window._pcgSmEnv = smEnv;
+  }
+  // S1 markers (green)
+  pcgS1Peaks.forEach(idx=>{
+    if(idx<start||idx>=end) return;
+    const x = Math.round((idx-start)/(end-start)*w);
+    ctx.strokeStyle='#4caf50'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h*0.7); ctx.stroke();
+    ctx.fillStyle='#4caf50'; ctx.font='bold 11px sans-serif';
+    ctx.fillText('S1',x+2,14);
+  });
+  // S2 markers (orange)
+  pcgS2Peaks.forEach(idx=>{
+    if(idx<start||idx>=end) return;
+    const x = Math.round((idx-start)/(end-start)*w);
+    ctx.strokeStyle='#ff9800'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h*0.6); ctx.stroke();
+    ctx.fillStyle='#ff9800'; ctx.font='bold 11px sans-serif';
+    ctx.fillText('S2',x+2,26);
+  });
+  // Header
+  ctx.fillStyle='rgba(255,255,255,0.8)';
+  ctx.font='bold 11px sans-serif';
+  const durSec = (pcm.length/sr).toFixed(1);
+  ctx.fillText(`PCG ${currentPoint.toUpperCase()} — ${durSec}s | S1:${pcgS1Peaks.length} S2:${pcgS2Peaks.length}`, 6, 13);
+}
+
+function pcgEnsureNavButtons() {
+  if(document.getElementById('pcgNavPrev')) return;
+  const container = dom.waveformCanvas.parentElement;
+  const nav = document.createElement('div');
+  nav.id='pcgNav';
+  nav.style.cssText='display:flex;gap:8px;justify-content:center;padding:6px;';
+  const btnPrev = document.createElement('button');
+  btnPrev.id='pcgNavPrev';
+  btnPrev.textContent='◀ Prev 6s';
+  btnPrev.style.cssText='flex:1;padding:6px;background:#1565c0;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;';
+  const btnNext = document.createElement('button');
+  btnNext.id='pcgNavNext';
+  btnNext.textContent='Next 6s ▶';
+  btnNext.style.cssText='flex:1;padding:6px;background:#1565c0;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;';
+  btnPrev.onclick=()=>{
+    if(!pcgReviewPcm) return;
+    const step = Math.round(PCG_VIEW_SEC*pcgReviewSr);
+    pcgReviewOffset = Math.max(0, pcgReviewOffset-step);
+    pcgRenderReviewWindow(null);
+  };
+  btnNext.onclick=()=>{
+    if(!pcgReviewPcm) return;
+    const step = Math.round(PCG_VIEW_SEC*pcgReviewSr);
+    const maxOffset = pcgReviewPcm.length - step;
+    pcgReviewOffset = Math.min(maxOffset, pcgReviewOffset+step);
+    pcgRenderReviewWindow(null);
+  };
+  nav.appendChild(btnPrev); nav.appendChild(btnNext);
+  container.parentElement.insertBefore(nav, container.nextSibling);
+}
+
+function exportJSON() {
+const data = {
+version: 'v7.0.155',
+timestamp: new Date().toISOString(),
+appState,
+point: currentPoint,
+mode: currentMode,
+isRunning,
+isCalibrated,
+signalStrength: Math.round(signalStrength),
+snrDb: isFinite(currentSNR) ? Number(currentSNR.toFixed(2)) : null,
+heartRate: (isRunning && hrConfirmed) ? heartRate : null,
+periodicityScore: Number(periodicityScore.toFixed(3)),
+bestLagBpm: bestLagBpm || null,
+hrGateReason,
+contactLevel: Math.round(contactLevel),
+stability: {
+isStable: stability.isStable,
+isSoftStable: stability.isSoftStable,
+motionSmoothAccel: Number(motion.smoothAccel.toFixed(4))
+},
+motionTypes: {
+isShaking: motion.isShaking,
+isTilted: motion.isTilted,
+currentHint: motion.currentHint
+},
+trendHistory: {
+direction: trendDirection,
+historySize: qualityHistory.length,
+recentValues: qualityHistory.slice(-10)
+},
+bestSession,
+bestByPoint
+};
+const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = 'auscultation_v7_0_155.json';
+a.click();
+setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+// ============================================================================
+// TREND & RING VISUALIZATION (копируется из 7.0.3)
+// ============================================================================
+function initTrendCanvas() {
+const canvas = document.getElementById('trendCanvas');
+if (!canvas) return;
+const w = CONFIG.TREND.CANVAS_WIDTH, h = CONFIG.TREND.CANVAS_HEIGHT;
+const dpr = window.devicePixelRatio || 1;
+canvas.width = w * dpr;
+canvas.height = h * dpr;
+canvas.style.width = w + 'px';
+canvas.style.height = h + 'px';
+const ctx = canvas.getContext('2d');
+ctx.scale(dpr, dpr);
+dom.trendCanvas = canvas;
+dom.trendCtx = ctx;
+dom.trendW = w;
+dom.trendH = h;
+clearTrendCanvas();
+}
+function clearTrendCanvas() {
+if (!dom.trendCtx) return;
+const ctx = dom.trendCtx;
+const w = dom.trendW || CONFIG.TREND.CANVAS_WIDTH;
+const h = dom.trendH || CONFIG.TREND.CANVAS_HEIGHT;
+ctx.fillStyle = 'rgba(0,0,0,0.4)';
+ctx.fillRect(0, 0, w, h);
+ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+ctx.lineWidth = 1;
+[25, 50, 75].forEach(pct => {
+const y = h - (pct / 100) * h;
+ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+});
+}
+function updateQualityHistory(score) {
+qualityHistory.push(score);
+if (qualityHistory.length > CONFIG.TREND.HISTORY_SIZE) qualityHistory.shift();
+}
+function analyzeTrend() {
+if (qualityHistory.length < CONFIG.TREND.ANALYSIS_WINDOW) return 'stable';
+const recent = qualityHistory.slice(-CONFIG.TREND.ANALYSIS_WINDOW);
+const n = recent.length;
+let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+for (let i = 0; i < n; i++) {
+sumX += i; sumY += recent[i]; sumXY += i * recent[i]; sumX2 += i * i;
+}
+const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+if (slope > CONFIG.TREND.SLOPE_THRESHOLD) return 'improving';
+if (slope < -CONFIG.TREND.SLOPE_THRESHOLD) return 'declining';
+return 'stable';
+}
+function drawTrendGraph() {
+if (!dom.trendCtx) return;
+const ctx = dom.trendCtx, w = dom.trendW, h = dom.trendH;
+ctx.fillStyle = 'rgba(0,0,0,0.4)';
+ctx.fillRect(0, 0, w, h);
+ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+ctx.lineWidth = 1;
+[25, 50, 75].forEach(pct => {
+const y = h - (pct / 100) * h;
+ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+});
+if (qualityHistory.length < 2) return;
+const trend = analyzeTrend();
+trendDirection = trend;
+const lineColor = trend === 'improving' ? '#4caf50' : trend === 'declining' ? '#f44336' : '#ffc107';
+const pts = qualityHistory;
+const totalPoints = CONFIG.TREND.HISTORY_SIZE;
+const step = w / (totalPoints - 1);
+const offsetX = (totalPoints - pts.length) * step;
+ctx.strokeStyle = lineColor;
+ctx.lineWidth = 2;
+ctx.beginPath();
+let firstX = 0, firstY = 0, lastX = 0, lastY = 0;
+for (let i = 0; i < pts.length; i++) {
+const x = offsetX + i * step;
+const y = h - (clamp(pts[i], 0, 100) / 100) * (h - 4) - 2;
+if (i === 0) { ctx.moveTo(x, y); firstX = x; firstY = y; }
+else ctx.lineTo(x, y);
+lastX = x; lastY = y;
+}
+ctx.stroke();
+ctx.lineTo(lastX, h);
+ctx.lineTo(firstX, h);
+ctx.closePath();
+ctx.fillStyle = lineColor === '#4caf50' ? 'rgba(76,175,80,0.2)' : lineColor === '#f44336' ? 'rgba(244,67,54,0.2)' : 'rgba(255,193,7,0.2)';
+ctx.fill();
+if (pts.length > 0) {
+ctx.beginPath();
+ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
+ctx.fillStyle = lineColor;
+ctx.fill();
+ctx.strokeStyle = '#fff';
+ctx.lineWidth = 1;
+ctx.stroke();
+}
+updateTrendStatus(trend);
+}
+function updateTrendStatus(trend) {
+if (!dom.trendStatus) return;
+dom.trendStatus.classList.remove('improving', 'declining', 'stable');
+if (trend === 'improving') {
+dom.trendStatus.textContent = 'Improving ↑';
+dom.trendStatus.classList.add('improving');
+} else if (trend === 'declining') {
+dom.trendStatus.textContent = 'Declining ↓';
+dom.trendStatus.classList.add('declining');
+} else {
+dom.trendStatus.textContent = 'Stable →';
+dom.trendStatus.classList.add('stable');
+}
+}
+function resetTrendHistory() {
+qualityHistory = [];
+trendDirection = 'stable';
+if (dom.trendStatus) {
+dom.trendStatus.textContent = '--';
+dom.trendStatus.classList.remove('improving', 'declining', 'stable');
+}
+clearTrendCanvas();
+}
+function createClipPath(startAngle, endAngle) {
+const cx = 50, cy = 50, r = 55, points = [`${cx}% ${cy}%`];
+for (let a = startAngle; a <= endAngle; a += 5) {
+const rad = (a - 90) * Math.PI / 180;
+points.push(`${cx + r * Math.cos(rad)}% ${cy + r * Math.sin(rad)}%`);
+}
+const endRad = (endAngle - 90) * Math.PI / 180;
+points.push(`${cx + r * Math.cos(endRad)}% ${cy + r * Math.sin(endRad)}%`);
+return `polygon(${points.join(', ')})`;
+}
+function initRing() {
+const container = dom.ringContainer;
+if (!container) return;
+container.querySelectorAll('.ring-segment, .ring-label').forEach(el => el.remove());
+POINT_ORDER.forEach((point, idx) => {
+const startAngle = idx * 72, endAngle = startAngle + 72;
+const seg = document.createElement('div');
+seg.className = 'ring-segment';
+seg.id = `segment-${point}`;
+seg.style.clipPath = createClipPath(startAngle, endAngle);
+seg.style.background = 'rgba(100,100,100,0.3)';
+container.appendChild(seg);
+const label = document.createElement('div');
+label.className = 'ring-label';
+label.id = `label-${point}`;
+const midAngle = (startAngle + endAngle) / 2;
+const labelRadius = 85;
+const rad = (midAngle - 90) * Math.PI / 180;
+label.style.left = `${110 + labelRadius * Math.cos(rad)}px`;
+label.style.top = `${110 + labelRadius * Math.sin(rad)}px`;
+label.innerHTML = `${POINTS[point].name}<br>--`;
+container.appendChild(label);
+});
+}
+function updateRingVisualization() {
+let maxScore = 0;
+POINT_ORDER.forEach(point => {
+const seg = document.getElementById(`segment-${point}`);
+const label = document.getElementById(`label-${point}`);
+const score = (typeof bestByPoint[point] === 'number') ? bestByPoint[point] : 0;
+if (score > maxScore) maxScore = score;
+const col = qualityColor(score);
+if (seg) seg.style.background = col;
+if (label) {
+label.innerHTML = `${POINTS[point].name}<br>${Math.round(score)}%`;
+label.style.color = col;
+label.style.opacity = score > 0 ? 1 : 0.5;
+}
+});
+if (dom.ringCenterValue) {
+dom.ringCenterValue.textContent = maxScore > 0 ? `${Math.round(maxScore)}%` : '--';
+dom.ringCenterValue.style.color = qualityColor(maxScore);
+}
+const ringBars = {
+aortic: dom.aorticBarRing, pulmonary: dom.pulmonaryBarRing,
+tricuspid: dom.tricuspidBarRing, mitral: dom.mitralBarRing, erb: dom.erbBarRing
+};
+POINT_ORDER.forEach(point => {
+const score = (typeof bestByPoint[point] === 'number') ? bestByPoint[point] : 0;
+const el = ringBars[point];
+if (el) {
+el.style.width = clamp(score, 0, 100) + '%';
+el.style.background = qualityColor(score);
+el.innerHTML = score > 0 ? `<span class="comp-value">${Math.round(score)}%</span>` : '';
+}
+});
+}
+function createVisibilityHandlers() {
+document.addEventListener('visibilitychange', async () => {
+if (!audioCtx) return;
+if (document.visibilityState === 'visible' && audioCtx.state === 'suspended') {
+try { await audioCtx.resume(); }
+catch (err) { console.warn('Audio resume failed:', err); }
+}
+});
+window.addEventListener('pagehide', () => {
+if (isRunning) stopAnalysis();
+});
+}
+// ============================================================================
+// DOM INITIALIZATION
+// ============================================================================
+function initDOM() {
+dom = {
+tabPosition: document.getElementById('tabPosition'),
+tabRing: document.getElementById('tabRing'),
+tabVisual: document.getElementById('tabVisual'),
+positionMode: document.getElementById('positionMode'),
+ringMode: document.getElementById('ringMode'),
+visualMode: document.getElementById('visualMode'),
+pointSelect: document.getElementById('pointSelect'),
+pointLabelTop: document.getElementById('pointLabelTop'),
+pointLabel: document.getElementById('pointLabel'),
+currentPointLabel: document.getElementById('currentPointLabel'),
+statusText: document.getElementById('statusText'),
+voiceBadge: document.getElementById('voiceBadge'),
+weakBadge: document.getElementById('weakBadge'),
+unstableBadge: document.getElementById('unstableBadge'),
+stabilityDot: document.getElementById('stabilityDot'),
+stabilityText: document.getElementById('stabilityText'),
+progressContainer: document.getElementById('progressContainer'),
+progressFill: document.getElementById('progressFill'),
+progressText: document.getElementById('progressText'),
+signalMeter: document.getElementById('signalMeter'),
+signalPercent: document.getElementById('signalPercent'),
+snrDisplay: document.getElementById('snrDisplay'),
+meterNeedle: document.getElementById('meterNeedle'),
+bestSession: document.getElementById('bestSession'),
+bestPoint: document.getElementById('bestPoint'),
+currentPointBest: document.getElementById('currentPointBest'),
+guideText: document.getElementById('guideText'),
+guideHint: document.getElementById('guideHint'),
+motionHint: document.getElementById('motionHint'),
+motionHintText: document.getElementById('motionHintText'),
+contactIndicator: document.getElementById('contactIndicator'),
+contactLevel: document.getElementById('contactLevel'),
+contactBarFill: document.getElementById('contactBarFill'),
+trendContainer: document.getElementById('trendContainer'),
+trendStatus: document.getElementById('trendStatus'),
+aorticBar: document.getElementById('aorticBar'),
+pulmonaryBar: document.getElementById('pulmonaryBar'),
+tricuspidBar: document.getElementById('tricuspidBar'),
+mitralBar: document.getElementById('mitralBar'),
+erbBar: document.getElementById('erbBar'),
+aorticBarRing: document.getElementById('aorticBarRing'),
+pulmonaryBarRing: document.getElementById('pulmonaryBarRing'),
+tricuspidBarRing: document.getElementById('tricuspidBarRing'),
+mitralBarRing: document.getElementById('mitralBarRing'),
+erbBarRing: document.getElementById('erbBarRing'),
+ringContainer: document.getElementById('ringContainer'),
+ringCenterValue: document.getElementById('ringCenterValue'),
+waveformCanvas: document.getElementById('waveformCanvas'),
+spectrogramCanvas: document.getElementById('spectrogramCanvas'),
+phaseLabel: document.getElementById('phaseLabel'),
+hrValue: document.getElementById('hrValue'),
+s1Value: document.getElementById('s1Value'),
+s2Value: document.getElementById('s2Value'),
+snrMetric: document.getElementById('snrMetric'),
+murmurValue: document.getElementById('murmurValue'),
+startBtn: document.getElementById('startBtn'),
+stopBtn: document.getElementById('stopBtn'),
+resetBtn: document.getElementById('resetBtn'),
+ringBtn: document.getElementById('ringBtn'),
+exportBtn: document.getElementById('exportBtn'),
+recalBtn: document.getElementById('recalBtn')
+};
+dom.waveCtx = dom.waveformCanvas.getContext('2d', { alpha: false });
+dom.spectroCtx = dom.spectrogramCanvas.getContext('2d');
+dom.tabPosition.addEventListener('click', () => setMode('position'));
+dom.tabRing.addEventListener('click', () => setMode('ring'));
+dom.tabVisual.addEventListener('click', () => setMode('visual'));
+dom.pointSelect.addEventListener('change', onPointChange);
+dom.startBtn.addEventListener('click', startAnalysis);
+dom.stopBtn.addEventListener('click', stopAnalysis);
+dom.resetBtn.addEventListener('click', resetAll);
+dom.ringBtn.addEventListener('click', () => setMode('ring'));
+dom.exportBtn.addEventListener('click', () => {
+  const btn = dom.exportBtn;
+  if (btn._pcgUrl) {
+    const a = document.createElement('a');
+    a.href = btn._pcgUrl;
+    a.download = btn._pcgName || 'pcg.wav';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(btn._pcgUrl), 2000);
+    btn._pcgUrl = null; btn.textContent = '📥 Export'; btn.style.background = '';
+  } else {
+    exportJSON();
+  }
+});
+const _recBtnEl = document.getElementById('recordBtn');
+if (_recBtnEl) _recBtnEl.addEventListener('click', () => {
+  if (pcgRecording) pcgStopRecording(); else pcgStartRecording();
+});
+dom.recalBtn.addEventListener('click', recalibrate);
+window.addEventListener('resize', () => {
+if (resizeTimer) clearTimeout(resizeTimer);
+resizeTimer = setTimeout(() => {
+resizeCanvases();
+initTrendCanvas();
+}, CONFIG.UI.RESIZE_DEBOUNCE_MS);
+});
+window.addEventListener('beforeunload', () => {
+if (isRunning) stopAnalysis();
+});
+document.addEventListener('touchstart', async () => {
+if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
+}, { once: true });
+createVisibilityHandlers();
+onPointChange();
+resizeCanvases();
+initTrendCanvas();
+initRing();
+setMode('position');
+// v7.0.146: long-press header to toggle diagnostics
+const headerEl = document.getElementById('headerEl');
+const statusBar = document.querySelector('.status-bar');
+let headerPressTimer = null;
+if (headerEl && statusBar) {
+  headerEl.addEventListener('touchstart', () => {
+    headerPressTimer = setTimeout(() => {
+      statusBar.classList.toggle('diag-visible');
+    }, 800);
+  }, { passive: true });
+  headerEl.addEventListener('touchend', () => {
+    if (headerPressTimer) { clearTimeout(headerPressTimer); headerPressTimer = null; }
+  });
+}
+// v7.0.146: init contact ring
+setTimeout(() => { drawContactRing(0); }, 100);
+setStabilityUI();
+updateMotionHint();
+updateGuide();
+console.log('%cCardiac Auscultation Trainer v7.0.106 loaded — 3 contact fixes on v7.0.42 base', 'color: #2e7d32; font-weight: bold; background: rgba(76,175,80,0.1); padding: 8px; border-radius: 4px;');
+}
+window.addEventListener('load', initDOM);
+</script>
+</body>
+</html>
