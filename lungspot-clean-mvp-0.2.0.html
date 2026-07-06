@@ -1,0 +1,1491 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LungSpot Clean MVP</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0e1116;
+      --panel: #151b22;
+      --panel-2: #1b232d;
+      --text: #e6edf3;
+      --muted: #8b98a8;
+      --line: #2b3542;
+      --accent: #3fb68b;
+      --accent-2: #65a8ff;
+      --warn: #e3b341;
+      --bad: #e16464;
+      --good: #5fd391;
+      --repeat: #f0c15c;
+      --discard: #eb7474;
+      --focus: rgba(101, 168, 255, .35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, select {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--text);
+      border-radius: 6px;
+      min-height: 38px;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+
+    button:hover:not(:disabled) {
+      border-color: #4a5c70;
+      background: #223040;
+    }
+
+    button:focus-visible, select:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    button:disabled {
+      opacity: .48;
+      cursor: default;
+    }
+
+    .primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #06120d;
+      font-weight: 700;
+    }
+
+    .danger {
+      background: #3a2024;
+      border-color: #6f333b;
+      color: #ffd7dc;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    header {
+      border-bottom: 1px solid var(--line);
+      background: #10151b;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 220px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+
+    .version {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .session-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      min-width: 0;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--bad);
+      flex: 0 0 auto;
+    }
+
+    .status-dot.live {
+      background: var(--good);
+      box-shadow: 0 0 0 5px rgba(95, 211, 145, .12);
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr) 360px;
+      gap: 1px;
+      background: var(--line);
+      min-height: 0;
+    }
+
+    aside, section {
+      background: var(--bg);
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .left, .right {
+      padding: 16px;
+      overflow: auto;
+    }
+
+    .center {
+      padding: 16px;
+      overflow: auto;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .toolbar .wide {
+      grid-column: 1 / -1;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    select {
+      width: 100%;
+      min-height: 38px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 8px 10px;
+    }
+
+    .point-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .point-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      text-align: left;
+      min-height: 44px;
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+
+    .point-row.active {
+      border-color: var(--accent-2);
+      box-shadow: inset 3px 0 0 var(--accent-2);
+    }
+
+    .point-name {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .point-label {
+      overflow-wrap: anywhere;
+      font-weight: 650;
+    }
+
+    .point-meta {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 74px;
+      min-height: 26px;
+      border-radius: 999px;
+      padding: 4px 8px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .pill.good { color: #07140c; background: var(--good); border-color: var(--good); }
+    .pill.repeat { color: #1a1202; background: var(--repeat); border-color: var(--repeat); }
+    .pill.discard { color: #1b0607; background: var(--discard); border-color: var(--discard); }
+
+    .surface {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .surface-head {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 50px;
+    }
+
+    .surface-title {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .surface-title strong {
+      font-size: 15px;
+      overflow-wrap: anywhere;
+    }
+
+    .surface-title span {
+      color: var(--muted);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .surface-body {
+      padding: 14px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #111820;
+      padding: 12px;
+      min-height: 78px;
+      display: grid;
+      align-content: center;
+      gap: 3px;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: 750;
+      line-height: 1.05;
+      overflow-wrap: anywhere;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .canvas-pair {
+      display: grid;
+      gap: 12px;
+    }
+
+    canvas {
+      width: 100%;
+      display: block;
+      border-radius: 6px;
+      background: #05080c;
+      border: 1px solid #1e2a36;
+    }
+
+    #waveCanvas { height: 140px; }
+    #spectrogramCanvas { height: 230px; }
+
+    .map-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .map-item {
+      border: 1px solid var(--line);
+      background: #111820;
+      border-radius: 8px;
+      padding: 10px;
+      min-height: 92px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .map-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: start;
+    }
+
+    .bar {
+      height: 8px;
+      border-radius: 999px;
+      background: #263241;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--bad), var(--warn), var(--good));
+      transition: width .18s ease;
+    }
+
+    .table {
+      display: grid;
+      gap: 8px;
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 74px minmax(0, 1.35fr) 70px 90px 90px;
+      gap: 8px;
+      align-items: center;
+      border-bottom: 1px solid rgba(43, 53, 66, .75);
+      padding: 8px 0;
+      min-width: 0;
+    }
+
+    .table-row.header {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .table-row span {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .quiet {
+      color: var(--muted);
+    }
+
+    .notice {
+      border: 1px solid #4b3f21;
+      background: #201b0e;
+      color: #e6d39c;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+
+    .recording {
+      color: #ffd0d4;
+    }
+
+    @media (max-width: 1180px) {
+      main {
+        grid-template-columns: 300px minmax(0, 1fr);
+      }
+      .right {
+        grid-column: 1 / -1;
+        border-top: 1px solid var(--line);
+      }
+    }
+
+    @media (max-width: 760px) {
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      main {
+        grid-template-columns: 1fr;
+      }
+      .metric-grid, .map-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .table-row {
+        grid-template-columns: 58px minmax(0, 1fr) 54px 72px 72px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <h1>LungSpot</h1>
+        <div class="version">clean MVP 0.2.0</div>
+      </div>
+      <div class="session-status">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="sessionStatus">Microphone stopped</span>
+      </div>
+    </header>
+
+    <main>
+      <aside class="left">
+        <div class="toolbar">
+          <button id="startMicBtn" class="primary">Start mic</button>
+          <button id="stopMicBtn" disabled>Stop mic</button>
+          <button id="startPointBtn" class="wide" disabled>Record selected point</button>
+          <button id="stopPointBtn" class="wide danger" disabled>Stop point</button>
+          <button id="downloadAudioBtn" disabled>Audio</button>
+          <button id="exportBtn">Export JSON</button>
+          <button id="resetBtn" class="wide">Reset session</button>
+        </div>
+
+        <div class="field">
+          <label for="modeSelect">Recording mode</label>
+          <select id="modeSelect"></select>
+        </div>
+
+        <div class="field">
+          <label for="pointSelect">Auscultation point</label>
+          <select id="pointSelect"></select>
+        </div>
+
+        <div class="point-list" id="pointList"></div>
+      </aside>
+
+      <section class="center">
+        <div class="surface">
+          <div class="surface-head">
+            <div class="surface-title">
+              <strong id="currentPointTitle">Anterior upper R</strong>
+              <span id="currentPointSub">No point recording</span>
+            </div>
+            <span class="pill" id="currentRecommendation">empty</span>
+          </div>
+          <div class="surface-body">
+            <div class="metric-grid">
+              <div class="metric">
+                <div class="metric-value" id="scoreValue">--</div>
+                <div class="metric-label">Score</div>
+              </div>
+              <div class="metric">
+                <div class="metric-value" id="breathsValue">--</div>
+                <div class="metric-label">Breaths used</div>
+              </div>
+              <div class="metric">
+                <div class="metric-value" id="artifactValue">--</div>
+                <div class="metric-label">Artifact</div>
+              </div>
+              <div class="metric">
+                <div class="metric-value" id="phaseValue">--</div>
+                <div class="metric-label">Phase</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="surface">
+          <div class="surface-head">
+            <div class="surface-title">
+              <strong>Live audio</strong>
+              <span id="liveReadout">Waiting for microphone</span>
+            </div>
+          </div>
+          <div class="surface-body">
+            <div class="canvas-pair">
+              <canvas id="waveCanvas" width="900" height="180"></canvas>
+              <canvas id="spectrogramCanvas" width="900" height="260"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="surface">
+          <div class="surface-head">
+            <div class="surface-title">
+              <strong id="pointMapTitle">Point map</strong>
+              <span id="pointMapSub">Quality and repeat/discard routing</span>
+            </div>
+          </div>
+          <div class="surface-body">
+            <div class="map-grid" id="pointMap"></div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="right">
+        <div class="surface">
+          <div class="surface-head">
+            <div class="surface-title">
+              <strong>Report</strong>
+              <span id="reportSummary">No captured points</span>
+            </div>
+          </div>
+          <div class="surface-body">
+            <div class="table" id="reportTable"></div>
+          </div>
+        </div>
+        <div style="height:12px"></div>
+        <div class="notice">
+          Screening and quality mapping only. The app does not generate disease labels or medical probabilities.
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    'use strict';
+
+    const APP_VERSION = 'lungspot-clean-mvp-0.2.0';
+    const MODE_DEFINITIONS = [
+      {
+        id: 'chest',
+        label: 'Chest Lung Map',
+        pointType: 'chest',
+        purpose: 'lung_acoustic_map',
+        mapTitle: 'Chest map',
+        mapSub: 'Chest-wall quality and repeat/discard routing'
+      },
+      {
+        id: 'neck',
+        label: 'Neck Airway',
+        pointType: 'neck',
+        purpose: 'upper_airway_reference',
+        mapTitle: 'Neck airway',
+        mapSub: 'Separate upper-airway quality channel'
+      },
+      {
+        id: 'mouth',
+        label: 'Mouth Breath/Cough',
+        pointType: 'mouth',
+        purpose: 'mouth_breath_cough_reference',
+        mapTitle: 'Mouth breath/cough',
+        mapSub: 'Separate mouth audio quality channel'
+      },
+      {
+        id: 'nose',
+        label: 'Nose Nasal/Snore',
+        pointType: 'nose',
+        purpose: 'nasal_snore_reference',
+        mapTitle: 'Nose nasal/snore',
+        mapSub: 'Separate nasal audio quality channel'
+      }
+    ];
+    const POINTS = [
+      { id: 'anterior_upper_right', modeId: 'chest', pointType: 'chest', label: 'Anterior upper R', region: 'Anterior', level: 'Upper', side: 'Right' },
+      { id: 'anterior_upper_left', modeId: 'chest', pointType: 'chest', label: 'Anterior upper L', region: 'Anterior', level: 'Upper', side: 'Left' },
+      { id: 'anterior_middle_right', modeId: 'chest', pointType: 'chest', label: 'Anterior middle R', region: 'Anterior', level: 'Middle', side: 'Right' },
+      { id: 'anterior_middle_left', modeId: 'chest', pointType: 'chest', label: 'Anterior middle L', region: 'Anterior', level: 'Middle', side: 'Left' },
+      { id: 'anterior_lower_right', modeId: 'chest', pointType: 'chest', label: 'Anterior lower R', region: 'Anterior', level: 'Lower', side: 'Right' },
+      { id: 'anterior_lower_left', modeId: 'chest', pointType: 'chest', label: 'Anterior lower L', region: 'Anterior', level: 'Lower', side: 'Left' },
+      { id: 'posterior_upper_right', modeId: 'chest', pointType: 'chest', label: 'Posterior upper R', region: 'Posterior', level: 'Upper', side: 'Right' },
+      { id: 'posterior_upper_left', modeId: 'chest', pointType: 'chest', label: 'Posterior upper L', region: 'Posterior', level: 'Upper', side: 'Left' },
+      { id: 'posterior_middle_right', modeId: 'chest', pointType: 'chest', label: 'Posterior middle R', region: 'Posterior', level: 'Middle', side: 'Right' },
+      { id: 'posterior_middle_left', modeId: 'chest', pointType: 'chest', label: 'Posterior middle L', region: 'Posterior', level: 'Middle', side: 'Left' },
+      { id: 'posterior_lower_right', modeId: 'chest', pointType: 'chest', label: 'Posterior lower R', region: 'Posterior', level: 'Lower', side: 'Right' },
+      { id: 'posterior_lower_left', modeId: 'chest', pointType: 'chest', label: 'Posterior lower L', region: 'Posterior', level: 'Lower', side: 'Left' },
+      { id: 'trachea_neck', modeId: 'neck', pointType: 'neck', label: 'Trachea / neck', region: 'Neck', level: 'Trachea', side: 'Midline' },
+      { id: 'mouth_breath', modeId: 'mouth', pointType: 'mouth', label: 'Mouth breath/cough', region: 'Mouth', level: 'Near-field', side: 'Midline' },
+      { id: 'nose_nasal', modeId: 'nose', pointType: 'nose', label: 'Nose nasal/snore', region: 'Nose', level: 'Near-field', side: 'Midline' }
+    ];
+
+    const dom = {
+      startMicBtn: document.getElementById('startMicBtn'),
+      stopMicBtn: document.getElementById('stopMicBtn'),
+      startPointBtn: document.getElementById('startPointBtn'),
+      stopPointBtn: document.getElementById('stopPointBtn'),
+      downloadAudioBtn: document.getElementById('downloadAudioBtn'),
+      exportBtn: document.getElementById('exportBtn'),
+      resetBtn: document.getElementById('resetBtn'),
+      modeSelect: document.getElementById('modeSelect'),
+      pointSelect: document.getElementById('pointSelect'),
+      pointList: document.getElementById('pointList'),
+      pointMap: document.getElementById('pointMap'),
+      pointMapTitle: document.getElementById('pointMapTitle'),
+      pointMapSub: document.getElementById('pointMapSub'),
+      currentPointTitle: document.getElementById('currentPointTitle'),
+      currentPointSub: document.getElementById('currentPointSub'),
+      currentRecommendation: document.getElementById('currentRecommendation'),
+      scoreValue: document.getElementById('scoreValue'),
+      breathsValue: document.getElementById('breathsValue'),
+      artifactValue: document.getElementById('artifactValue'),
+      phaseValue: document.getElementById('phaseValue'),
+      liveReadout: document.getElementById('liveReadout'),
+      reportTable: document.getElementById('reportTable'),
+      reportSummary: document.getElementById('reportSummary'),
+      sessionStatus: document.getElementById('sessionStatus'),
+      statusDot: document.getElementById('statusDot'),
+      waveCanvas: document.getElementById('waveCanvas'),
+      spectrogramCanvas: document.getElementById('spectrogramCanvas')
+    };
+
+    const pointState = {};
+    const sessionEvents = [];
+    const live = {
+      stream: null,
+      audioCtx: null,
+      source: null,
+      analyser: null,
+      timeData: null,
+      freqData: null,
+      rafId: 0,
+      running: false,
+      sampleRate: 0,
+      lastRms: 0,
+      lastFrameAt: 0,
+      currentFrame: null
+    };
+    const rec = {
+      mediaRecorder: null,
+      chunks: [],
+      activePointId: null,
+      startedAt: 0,
+      startedAtIso: null,
+      lastBlob: null,
+      lastBlobUrl: null,
+      lastPointId: null,
+      mimeType: ''
+    };
+
+    let activeModeId = MODE_DEFINITIONS[0].id;
+    let activePointId = POINTS.find(point => point.modeId === activeModeId).id;
+
+    function clamp(value, min = 0, max = 100) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function round(value, digits = 0) {
+      return Number.isFinite(value) ? Number(value.toFixed(digits)) : null;
+    }
+
+    function nowMs() {
+      return performance.now();
+    }
+
+    function createEmptyPoint(point) {
+      return {
+        id: point.id,
+        modeId: point.modeId,
+        pointType: point.pointType,
+        label: point.label,
+        region: point.region,
+        level: point.level,
+        side: point.side,
+        frames: [],
+        recordings: [],
+        metrics: emptyMetrics()
+      };
+    }
+
+    function emptyMetrics() {
+      return {
+        quality_score: null,
+        quality_best: null,
+        samples_count: 0,
+        breaths_detected: null,
+        breaths_used: null,
+        artifact_fraction: null,
+        motion_penalty: null,
+        speech_noise_penalty: null,
+        inspiration_confidence: null,
+        expiration_confidence: null,
+        phase_separation: null,
+        recommendation: 'empty',
+        wheeze_flag: null,
+        crackle_type: null,
+        stridor_flag: null,
+        reduced_breath_flag: null,
+        rub_flag: null
+      };
+    }
+
+    function resetState() {
+      for (const point of POINTS) pointState[point.id] = createEmptyPoint(point);
+      sessionEvents.length = 0;
+      rec.lastBlob = null;
+      rec.lastBlobUrl = null;
+      rec.lastPointId = null;
+      dom.modeSelect.value = activeModeId;
+      dom.pointSelect.value = activePointId;
+      renderAll();
+    }
+
+    function initUi() {
+      for (const mode of MODE_DEFINITIONS) {
+        const option = document.createElement('option');
+        option.value = mode.id;
+        option.textContent = mode.label;
+        dom.modeSelect.appendChild(option);
+      }
+
+      for (const point of POINTS) {
+        const option = document.createElement('option');
+        option.value = point.id;
+        option.textContent = point.label;
+        option.dataset.modeId = point.modeId;
+        dom.pointSelect.appendChild(option);
+
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'point-row';
+        row.dataset.pointId = point.id;
+        row.dataset.modeId = point.modeId;
+        row.innerHTML = [
+          '<span class="point-name">',
+          '<span class="point-label"></span>',
+          '<span class="point-meta"></span>',
+          '</span>',
+          '<span class="pill">empty</span>'
+        ].join('');
+        row.querySelector('.point-label').textContent = point.label;
+        row.querySelector('.point-meta').textContent = point.region + ' / ' + point.level + ' / ' + point.side;
+        row.addEventListener('click', () => setActivePoint(point.id));
+        dom.pointList.appendChild(row);
+
+        const mapItem = document.createElement('div');
+        mapItem.className = 'map-item';
+        mapItem.dataset.pointId = point.id;
+        mapItem.dataset.modeId = point.modeId;
+        mapItem.innerHTML = [
+          '<div class="map-top">',
+          '<div class="point-name">',
+          '<span class="point-label"></span>',
+          '<span class="point-meta"></span>',
+          '</div>',
+          '<span class="pill">empty</span>',
+          '</div>',
+          '<div class="bar"><div class="bar-fill"></div></div>',
+          '<div class="quiet">score -- / breaths --</div>'
+        ].join('');
+        mapItem.querySelector('.point-label').textContent = point.label;
+        mapItem.querySelector('.point-meta').textContent = point.region + ' ' + point.level + ' ' + point.side;
+        dom.pointMap.appendChild(mapItem);
+      }
+
+      dom.startMicBtn.addEventListener('click', startMic);
+      dom.stopMicBtn.addEventListener('click', stopMic);
+      dom.startPointBtn.addEventListener('click', startPointRecording);
+      dom.stopPointBtn.addEventListener('click', stopPointRecording);
+      dom.downloadAudioBtn.addEventListener('click', downloadLastAudio);
+      dom.exportBtn.addEventListener('click', exportJson);
+      dom.resetBtn.addEventListener('click', () => {
+        if (rec.mediaRecorder && rec.mediaRecorder.state !== 'inactive') stopPointRecording();
+        resetState();
+      });
+      dom.modeSelect.addEventListener('change', () => setActiveMode(dom.modeSelect.value));
+      dom.pointSelect.addEventListener('change', () => setActivePoint(dom.pointSelect.value));
+
+      resetState();
+      drawIdleCanvases();
+    }
+
+    async function startMic() {
+      if (live.running) return;
+      try {
+        live.stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+            channelCount: { ideal: 1 }
+          }
+        });
+        live.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (live.audioCtx.state === 'suspended') await live.audioCtx.resume();
+        live.sampleRate = live.audioCtx.sampleRate;
+        live.source = live.audioCtx.createMediaStreamSource(live.stream);
+        live.analyser = live.audioCtx.createAnalyser();
+        live.analyser.fftSize = 2048;
+        live.analyser.smoothingTimeConstant = 0.22;
+        live.timeData = new Float32Array(live.analyser.fftSize);
+        live.freqData = new Uint8Array(live.analyser.frequencyBinCount);
+        live.source.connect(live.analyser);
+        live.running = true;
+        sessionEvents.push({ type: 'mic_start', at: new Date().toISOString(), sampleRate: live.sampleRate });
+        updateTransport();
+        audioLoop();
+      } catch (error) {
+        dom.liveReadout.textContent = 'Mic error: ' + (error && error.message ? error.message : String(error));
+      }
+    }
+
+    function stopMic() {
+      if (rec.mediaRecorder && rec.mediaRecorder.state !== 'inactive') stopPointRecording();
+      if (live.rafId) cancelAnimationFrame(live.rafId);
+      live.rafId = 0;
+      if (live.source) {
+        try { live.source.disconnect(); } catch (error) {}
+      }
+      if (live.stream) {
+        for (const track of live.stream.getTracks()) track.stop();
+      }
+      if (live.audioCtx) {
+        try { live.audioCtx.close(); } catch (error) {}
+      }
+      live.stream = null;
+      live.audioCtx = null;
+      live.source = null;
+      live.analyser = null;
+      live.timeData = null;
+      live.freqData = null;
+      live.running = false;
+      live.currentFrame = null;
+      sessionEvents.push({ type: 'mic_stop', at: new Date().toISOString() });
+      updateTransport();
+      drawIdleCanvases();
+    }
+
+    function startPointRecording() {
+      if (!live.running || rec.mediaRecorder) return;
+      const point = pointState[activePointId];
+      point.frames = [];
+      point.metrics = emptyMetrics();
+      point.recordings = [];
+      rec.chunks = [];
+      rec.activePointId = activePointId;
+      rec.startedAt = nowMs();
+      rec.startedAtIso = new Date().toISOString();
+      rec.mimeType = pickMimeType();
+      try {
+        rec.mediaRecorder = new MediaRecorder(live.stream, rec.mimeType ? { mimeType: rec.mimeType } : undefined);
+        rec.mediaRecorder.ondataavailable = event => {
+          if (event.data && event.data.size) rec.chunks.push(event.data);
+        };
+        rec.mediaRecorder.onstop = finalizePointRecording;
+        rec.mediaRecorder.onerror = () => stopPointRecording();
+        rec.mediaRecorder.start(1000);
+        sessionEvents.push({
+          type: 'point_start',
+          pointId: activePointId,
+          pointType: point.pointType,
+          modeId: point.modeId,
+          at: rec.startedAtIso
+        });
+        renderAll();
+        updateTransport();
+      } catch (error) {
+        rec.mediaRecorder = null;
+        dom.liveReadout.textContent = 'Recorder error: ' + (error && error.name ? error.name : 'unavailable');
+      }
+    }
+
+    function stopPointRecording() {
+      if (!rec.mediaRecorder) return;
+      try {
+        if (rec.mediaRecorder.state !== 'inactive') rec.mediaRecorder.stop();
+        else finalizePointRecording();
+      } catch (error) {
+        finalizePointRecording();
+      }
+    }
+
+    function finalizePointRecording() {
+      if (!rec.activePointId) return;
+      const durationMs = Math.max(0, Math.round(nowMs() - rec.startedAt));
+      const point = pointState[rec.activePointId];
+      const blob = new Blob(rec.chunks, { type: rec.mimeType || 'audio/webm' });
+      if (rec.lastBlobUrl) URL.revokeObjectURL(rec.lastBlobUrl);
+      rec.lastBlob = blob;
+      rec.lastBlobUrl = URL.createObjectURL(blob);
+      rec.lastPointId = rec.activePointId;
+      point.recordings.push({
+        pointType: point.pointType,
+        modeId: point.modeId,
+        startedAt: rec.startedAtIso,
+        stoppedAt: new Date().toISOString(),
+        durationMs,
+        mimeType: blob.type,
+        bytes: blob.size
+      });
+      updatePointMetrics(point);
+      sessionEvents.push({
+        type: 'point_stop',
+        pointId: rec.activePointId,
+        pointType: point.pointType,
+        modeId: point.modeId,
+        at: new Date().toISOString(),
+        durationMs,
+        bytes: blob.size
+      });
+      rec.mediaRecorder = null;
+      rec.chunks = [];
+      rec.activePointId = null;
+      rec.startedAt = 0;
+      rec.startedAtIso = null;
+      updateTransport();
+      renderAll();
+    }
+
+    function pickMimeType() {
+      const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
+      for (const candidate of candidates) {
+        try {
+          if (window.MediaRecorder && MediaRecorder.isTypeSupported(candidate)) return candidate;
+        } catch (error) {}
+      }
+      return '';
+    }
+
+    function audioLoop() {
+      if (!live.running || !live.analyser) return;
+      live.analyser.getFloatTimeDomainData(live.timeData);
+      live.analyser.getByteFrequencyData(live.freqData);
+      const frame = analyzeFrame(live.timeData, live.freqData);
+      live.currentFrame = frame;
+      drawWave(live.timeData);
+      drawSpectrogram(live.freqData);
+      if (rec.mediaRecorder && rec.activePointId) {
+        const point = pointState[rec.activePointId];
+        point.frames.push(frame);
+        if (point.frames.length % 8 === 0) updatePointMetrics(point);
+      }
+      updateLiveReadout(frame);
+      renderCurrentPoint();
+      live.rafId = requestAnimationFrame(audioLoop);
+    }
+
+    function analyzeFrame(timeData, freqData) {
+      let sumSquares = 0;
+      let peak = 0;
+      let zeroCrossings = 0;
+      for (let i = 0; i < timeData.length; i += 1) {
+        const value = timeData[i];
+        sumSquares += value * value;
+        peak = Math.max(peak, Math.abs(value));
+        if (i > 0 && ((timeData[i - 1] < 0 && value >= 0) || (timeData[i - 1] >= 0 && value < 0))) zeroCrossings += 1;
+      }
+      const rms = Math.sqrt(sumSquares / timeData.length);
+      const zcr = zeroCrossings / timeData.length;
+      const low = bandPower(freqData, 20, 120);
+      const breath = bandPower(freqData, 120, 1200);
+      const voice = bandPower(freqData, 1200, 3600);
+      const high = bandPower(freqData, 3600, 8000);
+      const total = low + breath + voice + high + 1e-9;
+      const rmsJump = Math.abs(rms - live.lastRms);
+      live.lastRms = rms;
+
+      const contactScore = clamp((Math.log10(rms + 1e-5) + 4.15) * 44);
+      const breathRatio = breath / total;
+      const breathDetectability = clamp((breathRatio * 120) + (contactScore * .35) - (high / total) * 45);
+      const motionPenalty = clamp((low / total) * 80 + rmsJump * 1800);
+      const speechNoisePenalty = clamp((voice / total) * 70 + (high / total) * 60 + zcr * 250);
+      const clippingPenalty = peak > .97 ? 100 : (peak > .86 ? 45 : 0);
+      const tooQuiet = rms < .0025 ? 35 : 0;
+      const artifactScore = clamp(Math.max(clippingPenalty, tooQuiet, motionPenalty * .65, speechNoisePenalty * .55));
+      const quality = clamp(contactScore * .45 + breathDetectability * .55 - artifactScore * .45);
+      const envelope = rms * (0.55 + breathRatio);
+
+      return {
+        tMs: nowMs(),
+        rms,
+        peak,
+        zcr,
+        low,
+        breath,
+        voice,
+        high,
+        contactScore,
+        breathDetectability,
+        motionPenalty,
+        speechNoisePenalty,
+        artifactScore,
+        quality,
+        envelope
+      };
+    }
+
+    function bandPower(freqData, lowHz, highHz) {
+      if (!live.sampleRate || !live.analyser) return 0;
+      const binWidth = live.sampleRate / live.analyser.fftSize;
+      const start = Math.max(1, Math.floor(lowHz / binWidth));
+      const end = Math.min(freqData.length - 1, Math.ceil(highHz / binWidth));
+      let sum = 0;
+      let count = 0;
+      for (let i = start; i <= end; i += 1) {
+        const value = freqData[i] / 255;
+        sum += value * value;
+        count += 1;
+      }
+      return count ? sum / count : 0;
+    }
+
+    function updatePointMetrics(point) {
+      const frames = point.frames;
+      if (!frames.length) {
+        point.metrics = emptyMetrics();
+        return point.metrics;
+      }
+      const cycles = detectBreathCycles(frames);
+      const artifactFrames = frames.filter(frame => frame.artifactScore >= 55).length;
+      const avg = key => frames.reduce((sum, frame) => sum + frame[key], 0) / frames.length;
+      const best = key => frames.reduce((max, frame) => Math.max(max, frame[key]), 0);
+      const artifactFraction = artifactFrames / frames.length;
+      const motionPenalty = avg('motionPenalty');
+      const speechPenalty = avg('speechNoisePenalty');
+      const breathScore = avg('breathDetectability');
+      const qualityMean = avg('quality');
+      const phaseSeparation = estimatePhaseConfidence(cycles, frames);
+      const score = clamp(
+        qualityMean * .42 +
+        breathScore * .34 +
+        phaseSeparation * .24 -
+        artifactFraction * 35 -
+        motionPenalty * .18 -
+        speechPenalty * .16
+      );
+      const breathsUsed = cycles.filter(cycle => cycle.clean).length;
+      let recommendation = 'repeat';
+      if (frames.length < 10 || score < 30 || artifactFraction > .58) recommendation = 'discard';
+      else if (score >= 60 && breathsUsed >= 2 && artifactFraction <= .35 && motionPenalty < 55 && speechPenalty < 55) recommendation = 'good';
+
+      point.metrics = {
+        quality_score: Math.round(score),
+        quality_best: Math.round(best('quality')),
+        samples_count: frames.length,
+        breaths_detected: cycles.length,
+        breaths_used: breathsUsed,
+        artifact_fraction: round(artifactFraction, 3),
+        motion_penalty: round(motionPenalty, 1),
+        speech_noise_penalty: round(speechPenalty, 1),
+        inspiration_confidence: round(phaseSeparation * .52, 1),
+        expiration_confidence: round(phaseSeparation * .48, 1),
+        phase_separation: round(phaseSeparation, 1),
+        recommendation,
+        wheeze_flag: null,
+        crackle_type: null,
+        stridor_flag: null,
+        reduced_breath_flag: null,
+        rub_flag: null
+      };
+      return point.metrics;
+    }
+
+    function detectBreathCycles(frames) {
+      if (frames.length < 12) return [];
+      const envelopes = smooth(frames.map(frame => frame.envelope), 5);
+      const mean = envelopes.reduce((sum, value) => sum + value, 0) / envelopes.length;
+      const variance = envelopes.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / envelopes.length;
+      const std = Math.sqrt(variance);
+      const max = Math.max(...envelopes);
+      const threshold = Math.min(mean + std * .35, mean + (max - mean) * .55);
+      const cycles = [];
+      let startIndex = -1;
+      for (let i = 0; i < envelopes.length; i += 1) {
+        if (envelopes[i] >= threshold && startIndex === -1) startIndex = i;
+        if ((envelopes[i] < threshold || i === envelopes.length - 1) && startIndex !== -1) {
+          const endIndex = envelopes[i] < threshold ? i - 1 : i;
+          const durationMs = frames[endIndex].tMs - frames[startIndex].tMs;
+          if (durationMs >= 650 && durationMs <= 9000) {
+            const slice = frames.slice(startIndex, endIndex + 1);
+            const dirty = slice.filter(frame => frame.artifactScore >= 55).length / Math.max(1, slice.length);
+            cycles.push({
+              startMs: Math.round(frames[startIndex].tMs),
+              endMs: Math.round(frames[endIndex].tMs),
+              durationMs: Math.round(durationMs),
+              clean: dirty <= .35,
+              phase: null
+            });
+          }
+          startIndex = -1;
+        }
+      }
+      return cycles;
+    }
+
+    function smooth(values, radius) {
+      return values.map((_, index) => {
+        let sum = 0;
+        let count = 0;
+        for (let i = Math.max(0, index - radius); i <= Math.min(values.length - 1, index + radius); i += 1) {
+          sum += values[i];
+          count += 1;
+        }
+        return sum / count;
+      });
+    }
+
+    function estimatePhaseConfidence(cycles, frames) {
+      if (cycles.length < 2 || frames.length < 20) return 0;
+      const cleanCycles = cycles.filter(cycle => cycle.clean);
+      if (cleanCycles.length < 2) return 20;
+      const durations = cleanCycles.map(cycle => cycle.durationMs);
+      const mean = durations.reduce((sum, value) => sum + value, 0) / durations.length;
+      const variance = durations.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / durations.length;
+      const cv = Math.sqrt(variance) / Math.max(1, mean);
+      return clamp(78 - cv * 90 + Math.min(18, cleanCycles.length * 3));
+    }
+
+    function getActiveMode() {
+      return MODE_DEFINITIONS.find(mode => mode.id === activeModeId) || MODE_DEFINITIONS[0];
+    }
+
+    function pointsForMode(modeId) {
+      return POINTS.filter(point => point.modeId === modeId);
+    }
+
+    function setActiveMode(modeId) {
+      if (rec.mediaRecorder) return;
+      const modePoints = pointsForMode(modeId);
+      if (!modePoints.length) return;
+      activeModeId = modeId;
+      activePointId = modePoints[0].id;
+      dom.modeSelect.value = activeModeId;
+      dom.pointSelect.value = activePointId;
+      renderAll();
+    }
+
+    function setActivePoint(pointId) {
+      const point = POINTS.find(item => item.id === pointId);
+      if (!point) return;
+      activeModeId = point.modeId;
+      activePointId = pointId;
+      dom.modeSelect.value = activeModeId;
+      dom.pointSelect.value = pointId;
+      renderAll();
+    }
+
+    function updateTransport() {
+      const micOn = live.running;
+      const pointRecording = !!rec.mediaRecorder;
+      dom.startMicBtn.disabled = micOn;
+      dom.stopMicBtn.disabled = !micOn;
+      dom.startPointBtn.disabled = !micOn || pointRecording;
+      dom.stopPointBtn.disabled = !pointRecording;
+      dom.downloadAudioBtn.disabled = !rec.lastBlob;
+      dom.statusDot.classList.toggle('live', micOn);
+      if (pointRecording) {
+        const point = POINTS.find(item => item.id === rec.activePointId);
+        dom.sessionStatus.textContent = 'Recording ' + (point ? point.label : 'point');
+        dom.sessionStatus.classList.add('recording');
+      } else {
+        dom.sessionStatus.textContent = micOn ? 'Microphone live' : 'Microphone stopped';
+        dom.sessionStatus.classList.remove('recording');
+      }
+    }
+
+    function renderAll() {
+      renderModeUi();
+      renderPointRows();
+      renderCurrentPoint();
+      renderMap();
+      renderReport();
+      updateTransport();
+    }
+
+    function renderModeUi() {
+      const activeMode = getActiveMode();
+      dom.pointMapTitle.textContent = activeMode.mapTitle;
+      dom.pointMapSub.textContent = activeMode.mapSub;
+      for (const option of dom.pointSelect.options) {
+        option.hidden = option.dataset.modeId !== activeModeId;
+      }
+      if (!pointsForMode(activeModeId).some(point => point.id === activePointId)) {
+        activePointId = pointsForMode(activeModeId)[0].id;
+      }
+      dom.pointSelect.value = activePointId;
+      dom.modeSelect.value = activeModeId;
+    }
+
+    function renderPointRows() {
+      for (const row of dom.pointList.querySelectorAll('.point-row')) {
+        const state = pointState[row.dataset.pointId];
+        const metrics = state.metrics;
+        const pill = row.querySelector('.pill');
+        row.hidden = row.dataset.modeId !== activeModeId;
+        row.classList.toggle('active', row.dataset.pointId === activePointId);
+        setPill(pill, metrics.recommendation, metrics.quality_score);
+      }
+    }
+
+    function renderCurrentPoint() {
+      const point = pointState[activePointId];
+      const metrics = point.metrics;
+      dom.currentPointTitle.textContent = point.label;
+      dom.currentPointSub.textContent = rec.activePointId === activePointId
+        ? 'Recording selected point'
+        : getActiveMode().label + ' / ' + point.region + ' / ' + point.level + ' / ' + point.side;
+      setPill(dom.currentRecommendation, metrics.recommendation, metrics.quality_score);
+      dom.scoreValue.textContent = metrics.quality_score === null ? '--' : String(metrics.quality_score);
+      dom.breathsValue.textContent = metrics.breaths_used === null ? '--' : String(metrics.breaths_used);
+      dom.artifactValue.textContent = metrics.artifact_fraction === null ? '--' : Math.round(metrics.artifact_fraction * 100) + '%';
+      dom.phaseValue.textContent = metrics.phase_separation === null ? '--' : Math.round(metrics.phase_separation) + '%';
+    }
+
+    function renderMap() {
+      for (const item of dom.pointMap.querySelectorAll('.map-item')) {
+        const state = pointState[item.dataset.pointId];
+        const metrics = state.metrics;
+        const pill = item.querySelector('.pill');
+        const fill = item.querySelector('.bar-fill');
+        const quiet = item.querySelector('.quiet');
+        item.hidden = item.dataset.modeId !== activeModeId;
+        setPill(pill, metrics.recommendation, metrics.quality_score);
+        fill.style.width = (metrics.quality_score || 0) + '%';
+        quiet.textContent = 'score ' + (metrics.quality_score === null ? '--' : metrics.quality_score) +
+          ' / breaths ' + (metrics.breaths_used === null ? '--' : metrics.breaths_used);
+      }
+    }
+
+    function renderReport() {
+      const captured = POINTS.map(point => pointState[point.id]).filter(state => state.metrics.samples_count > 0);
+      const good = captured.filter(state => state.metrics.recommendation === 'good').length;
+      const repeat = captured.filter(state => state.metrics.recommendation === 'repeat').length;
+      const discard = captured.filter(state => state.metrics.recommendation === 'discard').length;
+      dom.reportSummary.textContent = captured.length
+        ? captured.length + ' captured / good ' + good + ' / repeat ' + repeat + ' / discard ' + discard
+        : 'No captured points';
+      dom.reportTable.replaceChildren();
+      const header = document.createElement('div');
+      header.className = 'table-row header';
+      header.innerHTML = '<span>Type</span><span>Point</span><span>Score</span><span>Breaths</span><span>Route</span>';
+      dom.reportTable.appendChild(header);
+      for (const point of POINTS) {
+        const state = pointState[point.id];
+        const metrics = state.metrics;
+        const row = document.createElement('div');
+        row.className = 'table-row';
+        row.innerHTML = [
+          '<span></span>',
+          '<span></span>',
+          '<span></span>',
+          '<span></span>',
+          '<span></span>'
+        ].join('');
+        row.children[0].textContent = point.pointType;
+        row.children[1].textContent = point.label;
+        row.children[2].textContent = metrics.quality_score === null ? '--' : String(metrics.quality_score);
+        row.children[3].textContent = metrics.breaths_used === null ? '--' : String(metrics.breaths_used);
+        row.children[4].textContent = metrics.recommendation;
+        dom.reportTable.appendChild(row);
+      }
+    }
+
+    function setPill(element, recommendation, score) {
+      element.className = 'pill';
+      if (recommendation === 'good' || recommendation === 'repeat' || recommendation === 'discard') {
+        element.classList.add(recommendation);
+        element.textContent = recommendation + (score === null ? '' : ' ' + score);
+      } else {
+        element.textContent = 'empty';
+      }
+    }
+
+    function updateLiveReadout(frame) {
+      dom.liveReadout.textContent = 'rms ' + round(frame.rms, 4) +
+        ' / breath ' + Math.round(frame.breathDetectability) +
+        ' / motion ' + Math.round(frame.motionPenalty) +
+        ' / noise ' + Math.round(frame.speechNoisePenalty);
+    }
+
+    function drawWave(timeData) {
+      const canvas = dom.waveCanvas;
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#05080c';
+      ctx.fillRect(0, 0, width, height);
+      ctx.strokeStyle = '#243242';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, height / 2);
+      ctx.lineTo(width, height / 2);
+      ctx.stroke();
+      ctx.strokeStyle = '#65a8ff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let x = 0; x < width; x += 1) {
+        const index = Math.floor(x / width * timeData.length);
+        const y = (0.5 - timeData[index] * 0.48) * height;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    function drawSpectrogram(freqData) {
+      const canvas = dom.spectrogramCanvas;
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      ctx.drawImage(canvas, -1, 0);
+      const maxBin = Math.min(freqData.length - 1, Math.floor(4200 / (live.sampleRate / live.analyser.fftSize)));
+      for (let y = 0; y < height; y += 1) {
+        const bin = Math.max(1, Math.floor((1 - y / height) * maxBin));
+        const value = freqData[bin] / 255;
+        ctx.fillStyle = heatColor(value);
+        ctx.fillRect(width - 1, y, 1, 1);
+      }
+    }
+
+    function heatColor(value) {
+      const v = clamp(value, 0, 1);
+      const r = Math.round(20 + 230 * Math.max(0, v - .45) / .55);
+      const g = Math.round(32 + 205 * Math.sin(v * Math.PI * .82));
+      const b = Math.round(42 + 190 * (1 - Math.abs(v - .42)));
+      return 'rgb(' + r + ',' + g + ',' + b + ')';
+    }
+
+    function drawIdleCanvases() {
+      for (const canvas of [dom.waveCanvas, dom.spectrogramCanvas]) {
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#05080c';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#243242';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+      }
+      dom.liveReadout.textContent = 'Waiting for microphone';
+    }
+
+    function buildReport() {
+      const pointReports = {};
+      for (const point of POINTS) {
+        const state = pointState[point.id];
+        const mode = MODE_DEFINITIONS.find(item => item.id === point.modeId);
+        pointReports[point.id] = {
+          id: point.id,
+          modeId: point.modeId,
+          pointType: point.pointType,
+          purpose: mode ? mode.purpose : null,
+          label: point.label,
+          region: point.region,
+          level: point.level,
+          side: point.side,
+          quality_score: state.metrics.quality_score,
+          quality_best: state.metrics.quality_best,
+          samples_count: state.metrics.samples_count,
+          breaths_detected: state.metrics.breaths_detected,
+          breaths_used: state.metrics.breaths_used,
+          artifact_fraction: state.metrics.artifact_fraction,
+          motion_penalty: state.metrics.motion_penalty,
+          speech_noise_penalty: state.metrics.speech_noise_penalty,
+          inspiration_confidence: state.metrics.inspiration_confidence,
+          expiration_confidence: state.metrics.expiration_confidence,
+          phase_separation: state.metrics.phase_separation,
+          recommendation: state.metrics.recommendation,
+          acoustic_events: {
+            wheeze_flag: state.metrics.wheeze_flag,
+            crackle_type: state.metrics.crackle_type,
+            stridor_flag: state.metrics.stridor_flag,
+            reduced_breath_flag: state.metrics.reduced_breath_flag,
+            rub_flag: state.metrics.rub_flag
+          },
+          recordings: state.recordings.slice()
+        };
+      }
+      const captured = Object.values(pointReports).filter(point => point.samples_count > 0);
+      const capturedByPointType = MODE_DEFINITIONS.reduce((out, mode) => {
+        out[mode.pointType] = captured.filter(point => point.pointType === mode.pointType).length;
+        return out;
+      }, {});
+      return {
+        schema: 'lungspot-multimode-quality-map/v1',
+        appName: 'LungSpot',
+        version: APP_VERSION,
+        timestamp: new Date().toISOString(),
+        scope: 'multimode_audio_quality_map',
+        modes: MODE_DEFINITIONS.map(mode => ({
+          id: mode.id,
+          label: mode.label,
+          pointType: mode.pointType,
+          purpose: mode.purpose
+        })),
+        safety: {
+          screeningOnly: true,
+          medicalProbability: false,
+          diseaseLabelsGenerated: false,
+          thresholdsCalibrated: false
+        },
+        session: {
+          pointCount: POINTS.length,
+          capturedPointCount: captured.length,
+          capturedByPointType,
+          goodCount: captured.filter(point => point.recommendation === 'good').length,
+          repeatCount: captured.filter(point => point.recommendation === 'repeat').length,
+          discardCount: captured.filter(point => point.recommendation === 'discard').length,
+          bestPoints: captured
+            .filter(point => point.quality_score !== null)
+            .sort((a, b) => b.quality_score - a.quality_score)
+            .slice(0, 3)
+            .map(point => ({ id: point.id, pointType: point.pointType, label: point.label, quality_score: point.quality_score }))
+        },
+        audioCore: {
+          browserAudio: true,
+          mediaRecorder: !!window.MediaRecorder,
+          sampleRate: live.sampleRate || null,
+          source: 'navigator.mediaDevices.getUserMedia',
+          streamExposedOnWindow: false
+        },
+        points: pointReports,
+        events: sessionEvents.slice()
+      };
+    }
+
+    function exportJson() {
+      const report = buildReport();
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+      downloadBlob(blob, 'lungspot_clean_mvp_0_2_report_' + timestampForFilename() + '.json');
+    }
+
+    function downloadLastAudio() {
+      if (!rec.lastBlob) return;
+      const point = pointState[rec.lastPointId];
+      const safePoint = point ? point.id : 'point';
+      const extension = rec.lastBlob.type.includes('mp4') ? 'm4a' : (rec.lastBlob.type.includes('ogg') ? 'ogg' : 'webm');
+      downloadBlob(rec.lastBlob, 'lungspot_' + safePoint + '_' + timestampForFilename() + '.' + extension);
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 500);
+    }
+
+    function timestampForFilename() {
+      const date = new Date();
+      const part = value => String(value).padStart(2, '0');
+      return date.getFullYear() + part(date.getMonth() + 1) + part(date.getDate()) + '_' +
+        part(date.getHours()) + part(date.getMinutes()) + part(date.getSeconds());
+    }
+
+    window.LungSpotApp = {
+      version: APP_VERSION,
+      buildReport,
+      pointState,
+      points: POINTS
+    };
+
+    initUi();
+  </script>
+</body>
+</html>
